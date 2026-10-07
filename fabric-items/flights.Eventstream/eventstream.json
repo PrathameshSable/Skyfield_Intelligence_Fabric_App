@@ -1,0 +1,58 @@
+{
+  "sources": [
+    {
+      "id": "7a183381-0545-44bc-ae06-f7857de3fb9d",
+      "name": "flight_pipe",
+      "type": "CustomEndpoint",
+      "properties": {}
+    }
+  ],
+  "destinations": [
+    {
+      "id": "3869b56f-7bd3-40f2-8ed9-94281d8a7c5f",
+      "name": "Eventhouse",
+      "type": "Eventhouse",
+      "properties": {
+        "dataIngestionMode": "ProcessedIngestion",
+        "workspaceId": "69cb4790-1cc3-43cb-8904-1f115e71dfdd",
+        "itemId": "93cc5c59-7411-48f8-ac3b-4500d7167985",
+        "databaseName": "Flight_api",
+        "tableName": "Flights",
+        "inputSerialization": {
+          "type": "Json",
+          "properties": {
+            "encoding": "UTF8"
+          }
+        }
+      },
+      "inputNodes": [
+        {
+          "name": "flights-stream"
+        }
+      ],
+      "inputSchemas": [
+        {
+          "name": "flights-stream",
+          "schema": {
+            "columns": []
+          }
+        }
+      ]
+    }
+  ],
+  "streams": [
+    {
+      "id": "774ba38b-fec3-4c1a-8472-b73fac6b0ce7",
+      "name": "flights-stream",
+      "type": "DefaultStream",
+      "properties": {},
+      "inputNodes": [
+        {
+          "name": "flight_pipe"
+        }
+      ]
+    }
+  ],
+  "operators": [],
+  "compatibilityLevel": "1.1"
+}

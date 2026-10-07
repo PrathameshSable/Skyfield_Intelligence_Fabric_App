@@ -1,0 +1,13 @@
+node_modules/
+dist/
+*.log
+.env
+.env.*
+!.env.example
+!.env.sample
+.DS_Store
+
+# Live notebook exports can contain pasted OpenSky / Eventstream credentials.
+# Commit notebooks only as scrubbed .py files under fabric-notebooks/.
+fabric-items/*.Notebook/
+*.ipynb

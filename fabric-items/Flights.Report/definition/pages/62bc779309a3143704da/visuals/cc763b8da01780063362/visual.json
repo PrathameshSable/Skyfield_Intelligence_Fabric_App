@@ -1,0 +1,791 @@
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/2.10.0/schema.json",
+  "name": "cc763b8da01780063362",
+  "position": {
+    "x": 10.023492560689116,
+    "y": 0,
+    "z": 0,
+    "height": 719.68676585747846,
+    "width": 1041.440877055599,
+    "tabOrder": 0
+  },
+  "visual": {
+    "visualType": "tableEx",
+    "query": {
+      "queryState": {
+        "Values": {
+          "projections": [
+            {
+              "field": {
+                "Column": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "Flights"
+                    }
+                  },
+                  "Property": "aircraftType"
+                }
+              },
+              "queryRef": "Flights.aircraftType",
+              "nativeQueryRef": "aircraftType"
+            },
+            {
+              "field": {
+                "Column": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "Flights"
+                    }
+                  },
+                  "Property": "airline"
+                }
+              },
+              "queryRef": "Flights.airline",
+              "nativeQueryRef": "airline"
+            },
+            {
+              "field": {
+                "Aggregation": {
+                  "Expression": {
+                    "Column": {
+                      "Expression": {
+                        "SourceRef": {
+                          "Entity": "Flights"
+                        }
+                      },
+                      "Property": "baroAltitude"
+                    }
+                  },
+                  "Function": 0
+                }
+              },
+              "queryRef": "Sum(Flights.baroAltitude)",
+              "nativeQueryRef": "Sum of baroAltitude"
+            },
+            {
+              "field": {
+                "Column": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "Flights"
+                    }
+                  },
+                  "Property": "callsign"
+                }
+              },
+              "queryRef": "Flights.callsign",
+              "nativeQueryRef": "callsign"
+            },
+            {
+              "field": {
+                "Column": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "Flights"
+                    }
+                  },
+                  "Property": "destIata"
+                }
+              },
+              "queryRef": "Flights.destIata",
+              "nativeQueryRef": "destIata"
+            },
+            {
+              "field": {
+                "Aggregation": {
+                  "Expression": {
+                    "Column": {
+                      "Expression": {
+                        "SourceRef": {
+                          "Entity": "Flights"
+                        }
+                      },
+                      "Property": "destLat"
+                    }
+                  },
+                  "Function": 0
+                }
+              },
+              "queryRef": "Sum(Flights.destLat)",
+              "nativeQueryRef": "Sum of destLat"
+            },
+            {
+              "field": {
+                "Aggregation": {
+                  "Expression": {
+                    "Column": {
+                      "Expression": {
+                        "SourceRef": {
+                          "Entity": "Flights"
+                        }
+                      },
+                      "Property": "destLon"
+                    }
+                  },
+                  "Function": 0
+                }
+              },
+              "queryRef": "Sum(Flights.destLon)",
+              "nativeQueryRef": "Sum of destLon"
+            },
+            {
+              "field": {
+                "Aggregation": {
+                  "Expression": {
+                    "Column": {
+                      "Expression": {
+                        "SourceRef": {
+                          "Entity": "Flights"
+                        }
+                      },
+                      "Property": "geoAltitude"
+                    }
+                  },
+                  "Function": 0
+                }
+              },
+              "queryRef": "Sum(Flights.geoAltitude)",
+              "nativeQueryRef": "Sum of geoAltitude"
+            },
+            {
+              "field": {
+                "Aggregation": {
+                  "Expression": {
+                    "Column": {
+                      "Expression": {
+                        "SourceRef": {
+                          "Entity": "Flights"
+                        }
+                      },
+                      "Property": "heading"
+                    }
+                  },
+                  "Function": 0
+                }
+              },
+              "queryRef": "Sum(Flights.heading)",
+              "nativeQueryRef": "Sum of heading"
+            },
+            {
+              "field": {
+                "Column": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "Flights"
+                    }
+                  },
+                  "Property": "icao24"
+                }
+              },
+              "queryRef": "Flights.icao24",
+              "nativeQueryRef": "icao24"
+            },
+            {
+              "field": {
+                "Column": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "Flights"
+                    }
+                  },
+                  "Property": "ingestedAt"
+                }
+              },
+              "queryRef": "Flights.ingestedAt",
+              "nativeQueryRef": "ingestedAt"
+            },
+            {
+              "field": {
+                "Column": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "Flights"
+                    }
+                  },
+                  "Property": "lastContact"
+                }
+              },
+              "queryRef": "Flights.lastContact",
+              "nativeQueryRef": "lastContact"
+            },
+            {
+              "field": {
+                "Aggregation": {
+                  "Expression": {
+                    "Column": {
+                      "Expression": {
+                        "SourceRef": {
+                          "Entity": "Flights"
+                        }
+                      },
+                      "Property": "latitude"
+                    }
+                  },
+                  "Function": 0
+                }
+              },
+              "queryRef": "Sum(Flights.latitude)",
+              "nativeQueryRef": "Sum of latitude"
+            },
+            {
+              "field": {
+                "Aggregation": {
+                  "Expression": {
+                    "Column": {
+                      "Expression": {
+                        "SourceRef": {
+                          "Entity": "Flights"
+                        }
+                      },
+                      "Property": "longitude"
+                    }
+                  },
+                  "Function": 0
+                }
+              },
+              "queryRef": "Sum(Flights.longitude)",
+              "nativeQueryRef": "Sum of longitude"
+            },
+            {
+              "field": {
+                "Column": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "Flights"
+                    }
+                  },
+                  "Property": "onGround"
+                }
+              },
+              "queryRef": "Flights.onGround",
+              "nativeQueryRef": "onGround"
+            },
+            {
+              "field": {
+                "Column": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "Flights"
+                    }
+                  },
+                  "Property": "manufacturer"
+                }
+              },
+              "queryRef": "Flights.manufacturer",
+              "nativeQueryRef": "manufacturer"
+            },
+            {
+              "field": {
+                "Column": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "Flights"
+                    }
+                  },
+                  "Property": "originCountry"
+                }
+              },
+              "queryRef": "Flights.originCountry",
+              "nativeQueryRef": "originCountry"
+            },
+            {
+              "field": {
+                "Column": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "Flights"
+                    }
+                  },
+                  "Property": "originIata"
+                }
+              },
+              "queryRef": "Flights.originIata",
+              "nativeQueryRef": "originIata"
+            },
+            {
+              "field": {
+                "Aggregation": {
+                  "Expression": {
+                    "Column": {
+                      "Expression": {
+                        "SourceRef": {
+                          "Entity": "Flights"
+                        }
+                      },
+                      "Property": "originLat"
+                    }
+                  },
+                  "Function": 0
+                }
+              },
+              "queryRef": "Sum(Flights.originLat)",
+              "nativeQueryRef": "Sum of originLat"
+            },
+            {
+              "field": {
+                "Aggregation": {
+                  "Expression": {
+                    "Column": {
+                      "Expression": {
+                        "SourceRef": {
+                          "Entity": "Flights"
+                        }
+                      },
+                      "Property": "originLon"
+                    }
+                  },
+                  "Function": 0
+                }
+              },
+              "queryRef": "Sum(Flights.originLon)",
+              "nativeQueryRef": "Sum of originLon"
+            },
+            {
+              "field": {
+                "Aggregation": {
+                  "Expression": {
+                    "Column": {
+                      "Expression": {
+                        "SourceRef": {
+                          "Entity": "Flights"
+                        }
+                      },
+                      "Property": "velocity"
+                    }
+                  },
+                  "Function": 0
+                }
+              },
+              "queryRef": "Sum(Flights.velocity)",
+              "nativeQueryRef": "Sum of velocity"
+            }
+          ]
+        }
+      },
+      "sortDefinition": {
+        "sort": [
+          {
+            "field": {
+              "Column": {
+                "Expression": {
+                  "SourceRef": {
+                    "Entity": "Flights"
+                  }
+                },
+                "Property": "aircraftType"
+              }
+            },
+            "direction": "Ascending"
+          }
+        ]
+      }
+    },
+    "drillFilterOtherVisuals": true
+  },
+  "filterConfig": {
+    "filters": [
+      {
+        "name": "6f62873014503a169750",
+        "field": {
+          "Column": {
+            "Expression": {
+              "SourceRef": {
+                "Entity": "Flights"
+              }
+            },
+            "Property": "aircraftType"
+          }
+        },
+        "type": "Categorical",
+        "filter": {
+          "Version": 2,
+          "From": [
+            {
+              "Name": "f",
+              "Entity": "Flights",
+              "Type": 0
+            }
+          ],
+          "Where": [
+            {
+              "Condition": {
+                "Not": {
+                  "Expression": {
+                    "In": {
+                      "Expressions": [
+                        {
+                          "Column": {
+                            "Expression": {
+                              "SourceRef": {
+                                "Source": "f"
+                              }
+                            },
+                            "Property": "aircraftType"
+                          }
+                        }
+                      ],
+                      "Values": [
+                        [
+                          {
+                            "Literal": {
+                              "Value": "''"
+                            }
+                          }
+                        ]
+                      ]
+                    }
+                  }
+                }
+              }
+            }
+          ]
+        },
+        "objects": {
+          "general": [
+            {
+              "properties": {
+                "isInvertedSelectionMode": {
+                  "expr": {
+                    "Literal": {
+                      "Value": "true"
+                    }
+                  }
+                }
+              }
+            }
+          ]
+        }
+      },
+      {
+        "name": "e42c4a47a863589e59a5",
+        "field": {
+          "Column": {
+            "Expression": {
+              "SourceRef": {
+                "Entity": "Flights"
+              }
+            },
+            "Property": "airline"
+          }
+        },
+        "type": "Categorical"
+      },
+      {
+        "name": "0dd7faad84cc093ce063",
+        "field": {
+          "Aggregation": {
+            "Expression": {
+              "Column": {
+                "Expression": {
+                  "SourceRef": {
+                    "Entity": "Flights"
+                  }
+                },
+                "Property": "baroAltitude"
+              }
+            },
+            "Function": 0
+          }
+        },
+        "type": "Advanced"
+      },
+      {
+        "name": "d75a1f6b3511231e0760",
+        "field": {
+          "Column": {
+            "Expression": {
+              "SourceRef": {
+                "Entity": "Flights"
+              }
+            },
+            "Property": "callsign"
+          }
+        },
+        "type": "Categorical"
+      },
+      {
+        "name": "fcea0f69d214b2ea56b7",
+        "field": {
+          "Column": {
+            "Expression": {
+              "SourceRef": {
+                "Entity": "Flights"
+              }
+            },
+            "Property": "destIata"
+          }
+        },
+        "type": "Categorical"
+      },
+      {
+        "name": "eeca441042938115703e",
+        "field": {
+          "Aggregation": {
+            "Expression": {
+              "Column": {
+                "Expression": {
+                  "SourceRef": {
+                    "Entity": "Flights"
+                  }
+                },
+                "Property": "destLat"
+              }
+            },
+            "Function": 0
+          }
+        },
+        "type": "Advanced"
+      },
+      {
+        "name": "9fb11bc1b81b3dde1345",
+        "field": {
+          "Aggregation": {
+            "Expression": {
+              "Column": {
+                "Expression": {
+                  "SourceRef": {
+                    "Entity": "Flights"
+                  }
+                },
+                "Property": "destLon"
+              }
+            },
+            "Function": 0
+          }
+        },
+        "type": "Advanced"
+      },
+      {
+        "name": "56c4bcae405720346650",
+        "field": {
+          "Aggregation": {
+            "Expression": {
+              "Column": {
+                "Expression": {
+                  "SourceRef": {
+                    "Entity": "Flights"
+                  }
+                },
+                "Property": "geoAltitude"
+              }
+            },
+            "Function": 0
+          }
+        },
+        "type": "Advanced"
+      },
+      {
+        "name": "257f9a62da0bde03ccdb",
+        "field": {
+          "Aggregation": {
+            "Expression": {
+              "Column": {
+                "Expression": {
+                  "SourceRef": {
+                    "Entity": "Flights"
+                  }
+                },
+                "Property": "heading"
+              }
+            },
+            "Function": 0
+          }
+        },
+        "type": "Advanced"
+      },
+      {
+        "name": "97655736071c1ec06ce0",
+        "field": {
+          "Column": {
+            "Expression": {
+              "SourceRef": {
+                "Entity": "Flights"
+              }
+            },
+            "Property": "icao24"
+          }
+        },
+        "type": "Categorical"
+      },
+      {
+        "name": "48b27b63ac213b24d75a",
+        "field": {
+          "Column": {
+            "Expression": {
+              "SourceRef": {
+                "Entity": "Flights"
+              }
+            },
+            "Property": "ingestedAt"
+          }
+        },
+        "type": "Categorical"
+      },
+      {
+        "name": "3f66aa80eaa305501407",
+        "field": {
+          "Column": {
+            "Expression": {
+              "SourceRef": {
+                "Entity": "Flights"
+              }
+            },
+            "Property": "lastContact"
+          }
+        },
+        "type": "Categorical"
+      },
+      {
+        "name": "0bbad5688019d6d794e6",
+        "field": {
+          "Aggregation": {
+            "Expression": {
+              "Column": {
+                "Expression": {
+                  "SourceRef": {
+                    "Entity": "Flights"
+                  }
+                },
+                "Property": "latitude"
+              }
+            },
+            "Function": 0
+          }
+        },
+        "type": "Advanced"
+      },
+      {
+        "name": "c212ddaa5c907b205649",
+        "field": {
+          "Aggregation": {
+            "Expression": {
+              "Column": {
+                "Expression": {
+                  "SourceRef": {
+                    "Entity": "Flights"
+                  }
+                },
+                "Property": "longitude"
+              }
+            },
+            "Function": 0
+          }
+        },
+        "type": "Advanced"
+      },
+      {
+        "name": "3f0455642b648e1b0623",
+        "field": {
+          "Column": {
+            "Expression": {
+              "SourceRef": {
+                "Entity": "Flights"
+              }
+            },
+            "Property": "onGround"
+          }
+        },
+        "type": "Categorical"
+      },
+      {
+        "name": "c2b3a21468b419077378",
+        "field": {
+          "Column": {
+            "Expression": {
+              "SourceRef": {
+                "Entity": "Flights"
+              }
+            },
+            "Property": "manufacturer"
+          }
+        },
+        "type": "Categorical"
+      },
+      {
+        "name": "e58ca26573029655e0b9",
+        "field": {
+          "Column": {
+            "Expression": {
+              "SourceRef": {
+                "Entity": "Flights"
+              }
+            },
+            "Property": "originCountry"
+          }
+        },
+        "type": "Categorical"
+      },
+      {
+        "name": "a20fbc0f9767390c05e1",
+        "field": {
+          "Column": {
+            "Expression": {
+              "SourceRef": {
+                "Entity": "Flights"
+              }
+            },
+            "Property": "originIata"
+          }
+        },
+        "type": "Categorical"
+      },
+      {
+        "name": "bcb6590660700065078b",
+        "field": {
+          "Aggregation": {
+            "Expression": {
+              "Column": {
+                "Expression": {
+                  "SourceRef": {
+                    "Entity": "Flights"
+                  }
+                },
+                "Property": "originLat"
+              }
+            },
+            "Function": 0
+          }
+        },
+        "type": "Advanced"
+      },
+      {
+        "name": "e1f96ec75cc564aa7a00",
+        "field": {
+          "Aggregation": {
+            "Expression": {
+              "Column": {
+                "Expression": {
+                  "SourceRef": {
+                    "Entity": "Flights"
+                  }
+                },
+                "Property": "originLon"
+              }
+            },
+            "Function": 0
+          }
+        },
+        "type": "Advanced"
+      },
+      {
+        "name": "1fe221ee70a288c7b101",
+        "field": {
+          "Aggregation": {
+            "Expression": {
+              "Column": {
+                "Expression": {
+                  "SourceRef": {
+                    "Entity": "Flights"
+                  }
+                },
+                "Property": "velocity"
+              }
+            },
+            "Function": 0
+          }
+        },
+        "type": "Advanced"
+      }
+    ]
+  }
+}

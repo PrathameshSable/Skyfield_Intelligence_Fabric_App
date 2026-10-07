@@ -1,0 +1,17 @@
+node_modules/
+dist/
+*.local
+.env
+.env.*
+!.env.example
+!.env.sample
+.DS_Store
+.vscode/
+
+# Fabric / Rayfin — personal config, not committed
+# (src/fabric.generated.ts IS committed with placeholders so the app builds
+#  out-of-the-box; regenerate it with your real ids via `npm run build:fabric`.)
+fabric.yaml
+rayfin/rayfin.yml
+rayfin/.env
+rayfin/.deployments.json

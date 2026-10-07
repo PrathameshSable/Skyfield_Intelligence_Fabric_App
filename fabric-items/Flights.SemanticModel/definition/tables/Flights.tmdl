@@ -1,0 +1,216 @@
+table Flights
+	lineageTag: b4daf3c9-d284-4b44-b56b-b87c4a43f72b
+
+	column icao24
+		dataType: string
+		lineageTag: 3d7900c8-29df-4d47-bc3b-bd9f0e63c128
+		summarizeBy: none
+		sourceColumn: icao24
+
+		annotation SummarizationSetBy = Automatic
+
+	column callsign
+		dataType: string
+		lineageTag: 141cbbe3-0305-4d86-ac50-0bc8b64fc27c
+		summarizeBy: none
+		sourceColumn: callsign
+
+		annotation SummarizationSetBy = Automatic
+
+	column originCountry
+		dataType: string
+		lineageTag: bc816f93-51f9-46ab-b3f4-f0a3a9a8b9b1
+		summarizeBy: none
+		sourceColumn: originCountry
+
+		annotation SummarizationSetBy = Automatic
+
+	column longitude
+		dataType: double
+		lineageTag: f20b8dec-3004-4d47-9450-f1711d252122
+		summarizeBy: sum
+		sourceColumn: longitude
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	column latitude
+		dataType: double
+		lineageTag: d17a7be4-71d4-4416-bd13-b212ecb3cab1
+		summarizeBy: sum
+		sourceColumn: latitude
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	column geoAltitude
+		dataType: double
+		lineageTag: 316a76d1-ca9c-433c-8b57-0dc03ee358d6
+		summarizeBy: sum
+		sourceColumn: geoAltitude
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	column baroAltitude
+		dataType: double
+		lineageTag: 8562734b-4ab6-4890-b7b6-41ea2543f9cc
+		summarizeBy: sum
+		sourceColumn: baroAltitude
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	column velocity
+		dataType: double
+		lineageTag: cafcc560-83a6-40aa-9524-0a6f2ba26d27
+		summarizeBy: sum
+		sourceColumn: velocity
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	column heading
+		dataType: double
+		lineageTag: 64b3637d-dab1-420a-b335-5908eb2b146a
+		summarizeBy: sum
+		sourceColumn: heading
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	column verticalRate
+		dataType: double
+		lineageTag: a5f8b57b-bd29-46bf-bc94-cd5bea808a8d
+		summarizeBy: sum
+		sourceColumn: verticalRate
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	column onGround
+		dataType: boolean
+		formatString: """TRUE"";""TRUE"";""FALSE"""
+		lineageTag: 305045f2-a370-44a1-a0b5-841af557c616
+		summarizeBy: none
+		sourceColumn: onGround
+
+		annotation SummarizationSetBy = Automatic
+
+	column lastContact
+		dataType: dateTime
+		formatString: General Date
+		lineageTag: 0ea77b2f-7552-4ce7-a065-c329905b1378
+		summarizeBy: none
+		sourceColumn: lastContact
+
+		annotation SummarizationSetBy = Automatic
+
+	column ingestedAt
+		dataType: dateTime
+		formatString: General Date
+		lineageTag: 35c91ad9-ae66-4310-a40e-b8ced9365065
+		summarizeBy: none
+		sourceColumn: ingestedAt
+
+		annotation SummarizationSetBy = Automatic
+
+	column originLat
+		dataType: double
+		lineageTag: e49da002-a543-438e-b349-b9422e1dc639
+		summarizeBy: sum
+		sourceColumn: originLat
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	column originLon
+		dataType: double
+		lineageTag: d32ab913-94e2-4004-aef4-b93df6cf5aa2
+		summarizeBy: sum
+		sourceColumn: originLon
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	column originIata
+		dataType: string
+		lineageTag: 464e8c40-f669-4367-b4f0-80eeb96a7381
+		summarizeBy: none
+		sourceColumn: originIata
+
+		annotation SummarizationSetBy = Automatic
+
+	column destLat
+		dataType: double
+		lineageTag: 8815289c-8200-4379-8646-bba3de8a1d8c
+		summarizeBy: sum
+		sourceColumn: destLat
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	column destLon
+		dataType: double
+		lineageTag: 5ca0dbeb-ec61-47a5-9b82-8392233c30a4
+		summarizeBy: sum
+		sourceColumn: destLon
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	column destIata
+		dataType: string
+		lineageTag: bf377287-5c80-462b-8465-50fa5c2af1a5
+		summarizeBy: none
+		sourceColumn: destIata
+
+		annotation SummarizationSetBy = Automatic
+
+	column airline
+		dataType: string
+		lineageTag: 049ded1c-a335-4d93-838c-9557ff1ea326
+		summarizeBy: none
+		sourceColumn: airline
+
+		annotation SummarizationSetBy = Automatic
+
+	column manufacturer
+		dataType: string
+		lineageTag: 8583b6fd-817f-46d6-9ddc-39b124f3a2cc
+		summarizeBy: none
+		sourceColumn: manufacturer
+
+		annotation SummarizationSetBy = Automatic
+
+	column aircraftType
+		dataType: string
+		lineageTag: a96462bb-38da-41c9-9070-e0da493c52f5
+		summarizeBy: none
+		sourceColumn: aircraftType
+
+		annotation SummarizationSetBy = Automatic
+
+	partition Flights = m
+		mode: directQuery
+		source =
+				let
+				Source = AzureDataExplorer.Contents("https://trd-t2sy82ks3kf743zyef.z5.kusto.fabric.microsoft.com", "Flight_api", "Flights", [])
+				in
+				Source
+
+	changedProperty = Name
+
+	annotation PBI_ResultType = Table
+

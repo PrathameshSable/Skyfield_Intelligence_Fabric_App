@@ -1,0 +1,28 @@
+// Live aircraft set for the globe. Read by createFabricFlightProvider().
+// Column order MUST match rowToFlight() in src/data/fabric/fabricProvider.ts.
+//
+// `Flights` is append-only, so pull the most-recent rows (newest first) and let
+// the app keep the latest row per aircraft (rowsToLatestFlights dedups by icao24).
+// originLat..destIata come from the notebook's adsbdb route enrichment.
+EVALUATE
+SELECTCOLUMNS(
+    TOPN ( 6000, Flights, Flights[ingestedAt], DESC ),
+    "icao24", Flights[icao24],
+    "callsign", Flights[callsign],
+    "originCountry", Flights[originCountry],
+    "longitude", Flights[longitude],
+    "latitude", Flights[latitude],
+    "geoAltitude", Flights[geoAltitude],
+    "velocity", Flights[velocity],
+    "heading", Flights[heading],
+    "verticalRate", Flights[verticalRate],
+    "onGround", Flights[onGround],
+    "originLat", Flights[originLat],
+    "originLon", Flights[originLon],
+    "destLat", Flights[destLat],
+    "destLon", Flights[destLon],
+    "originIata", Flights[originIata],
+    "destIata", Flights[destIata],
+    "ingestedAt", Flights[ingestedAt]
+)
+ORDER BY [ingestedAt] DESC

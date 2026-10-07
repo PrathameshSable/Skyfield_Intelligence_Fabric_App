@@ -1,0 +1,85 @@
+// ─────────────────────────────────────────────────────────────────────────────
+// Eventhouse (KQL DB) setup for the LIVE FLIGHT feed (OpenSky → Eventstream).
+// Run in your Fabric Eventhouse KQL queryset. Schema matches FlightEvent
+// (src/flights/flightTypes.ts).
+// ─────────────────────────────────────────────────────────────────────────────
+
+.create-merge table Flights (
+    icao24:        string,
+    callsign:      string,
+    originCountry: string,
+    longitude:     real,
+    latitude:      real,
+    geoAltitude:   real,
+    baroAltitude:  real,
+    velocity:      real,
+    heading:       real,
+    verticalRate:  real,
+    onGround:      bool,
+    lastContact:   datetime,
+    ingestedAt:    datetime,
+    originLat:     real,
+    originLon:     real,
+    originIata:    string,
+    destLat:       real,
+    destLon:       real,
+    destIata:      string,
+    airline:       string,
+    manufacturer:  string,
+    aircraftType:  string
+)
+
+// Already created the table without the new columns? Run this once to add them
+// (.create-merge above also adds missing columns, so re-running it works too):
+// .alter-merge table Flights (originLat:real, originLon:real, originIata:string, destLat:real, destLon:real, destIata:string, airline:string, manufacturer:string, aircraftType:string)
+
+.create-or-alter table Flights ingestion json mapping "FlightsJson"
+```
+[
+  { "column": "icao24",        "path": "$.icao24" },
+  { "column": "callsign",      "path": "$.callsign" },
+  { "column": "originCountry", "path": "$.originCountry" },
+  { "column": "longitude",     "path": "$.longitude" },
+  { "column": "latitude",      "path": "$.latitude" },
+  { "column": "geoAltitude",   "path": "$.geoAltitude" },
+  { "column": "baroAltitude",  "path": "$.baroAltitude" },
+  { "column": "velocity",      "path": "$.velocity" },
+  { "column": "heading",       "path": "$.heading" },
+  { "column": "verticalRate",  "path": "$.verticalRate" },
+  { "column": "onGround",      "path": "$.onGround" },
+  { "column": "lastContact",   "path": "$.lastContact" },
+  { "column": "ingestedAt",    "path": "$.ingestedAt" },
+  { "column": "originLat",     "path": "$.originLat" },
+  { "column": "originLon",     "path": "$.originLon" },
+  { "column": "originIata",    "path": "$.originIata" },
+  { "column": "destLat",       "path": "$.destLat" },
+  { "column": "destLon",       "path": "$.destLon" },
+  { "column": "destIata",      "path": "$.destIata" },
+  { "column": "airline",       "path": "$.airline" },
+  { "column": "manufacturer",  "path": "$.manufacturer" },
+  { "column": "aircraftType",  "path": "$.aircraftType" }
+]
+```
+
+// Keep ~24h of history for playback/analytics; tune to taste.
+.alter-merge table Flights policy retention softdelete = 1d
+
+// ── Handy functions the app / semantic model can build on ─────────────────────
+
+// Latest known position per aircraft (the "live map" set).
+.create-or-alter function LatestFlights() {
+    Flights
+    | summarize arg_max(ingestedAt, *) by icao24
+    | where ingestedAt > ago(2m)        // only recently-seen aircraft
+}
+
+// Busiest origin countries over a window.
+.create-or-alter function TopCountries(windowMinutes:long = 15, topN:long = 10) {
+    Flights
+    | where ingestedAt > ago(windowMinutes * 1m)
+    | summarize flights = dcount(icao24) by originCountry
+    | top topN by flights desc
+}
+
+// Sanity check once data flows:
+// LatestFlights() | count

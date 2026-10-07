@@ -1,0 +1,39 @@
+{
+  "queryset": {
+    "version": "1.0.0",
+    "dataSources": [
+      {
+        "id": "f85ad1fc-6a91-4afd-8782-bac655fff723",
+        "clusterUri": "https://trd-t2sy82ks3kf743zyef.z5.kusto.fabric.microsoft.com",
+        "type": "Fabric",
+        "databaseItemId": "Flight_api"
+      },
+      {
+        "id": "2f7b784f-3727-429b-bf22-5f87279afcac",
+        "clusterUri": "https://trd-t2sy82ks3kf743zyef.z5.kusto.fabric.microsoft.com",
+        "type": "Fabric",
+        "databaseItemId": "93cc5c59-7411-48f8-ac3b-4500d7167985"
+      }
+    ],
+    "tabs": [
+      {
+        "id": "191207de-7fd4-479d-bbee-da025f2551d8",
+        "content": "// ─────────────────────────────────────────────────────────────────────────────\n// Eventhouse (KQL DB) setup for the LIVE FLIGHT feed (OpenSky → Eventstream).\n// Run in your Fabric Eventhouse KQL queryset. Schema matches FlightEvent\n// (src/flights/flightTypes.ts).\n// ─────────────────────────────────────────────────────────────────────────────\n\n.create-merge table Flights (\n    icao24:        string,\n    callsign:      string,\n    originCountry: string,\n    longitude:     real,\n    latitude:      real,\n    geoAltitude:   real,\n    baroAltitude:  real,\n    velocity:      real,\n    heading:       real,\n    verticalRate:  real,\n    onGround:      bool,\n    lastContact:   datetime,\n    ingestedAt:    datetime\n)\n\n.create-or-alter table Flights ingestion json mapping \"FlightsJson\"\n```\n[\n  { \"column\": \"icao24\",        \"path\": \"$.icao24\" },\n  { \"column\": \"callsign\",      \"path\": \"$.callsign\" },\n  { \"column\": \"originCountry\", \"path\": \"$.originCountry\" },\n  { \"column\": \"longitude\",     \"path\": \"$.longitude\" },\n  { \"column\": \"latitude\",      \"path\": \"$.latitude\" },\n  { \"column\": \"geoAltitude\",   \"path\": \"$.geoAltitude\" },\n  { \"column\": \"baroAltitude\",  \"path\": \"$.baroAltitude\" },\n  { \"column\": \"velocity\",      \"path\": \"$.velocity\" },\n  { \"column\": \"heading\",       \"path\": \"$.heading\" },\n  { \"column\": \"verticalRate\",  \"path\": \"$.verticalRate\" },\n  { \"column\": \"onGround\",      \"path\": \"$.onGround\" },\n  { \"column\": \"lastContact\",   \"path\": \"$.lastContact\" },\n  { \"column\": \"ingestedAt\",    \"path\": \"$.ingestedAt\" }\n]\n```\n\n// Keep ~24h of history for playback/analytics; tune to taste.\n.alter-merge table Flights policy retention softdelete = 1d\n\n// ── Handy functions the app / semantic model can build on ─────────────────────\n\n// Latest known position per aircraft (the \"live map\" set).\n.create-or-alter function LatestFlights() {\n    Flights\n    | summarize arg_max(ingestedAt, *) by icao24\n    | where ingestedAt > ago(2m)        // only recently-seen aircraft\n}\n\n// Busiest origin countries over a window.\n.create-or-alter function TopCountries(windowMinutes:long = 15, topN:long = 10) {\n    Flights\n    | where ingestedAt > ago(windowMinutes * 1m)\n    | summarize flights = dcount(icao24) by originCountry\n    | top topN by flights desc\n}\n\n// Sanity check once data flows:\n// LatestFlights() | count\n",
+        "title": "Tab",
+        "dataSourceId": "2f7b784f-3727-429b-bf22-5f87279afcac"
+      },
+      {
+        "id": "1d184faf-1fca-4602-9986-e3760d2443f5",
+        "content": ".show table Flights",
+        "title": "",
+        "dataSourceId": "2f7b784f-3727-429b-bf22-5f87279afcac"
+      },
+      {
+        "id": "c3c31078-8581-4706-8ef1-92899fc978c2",
+        "content": "// Use 'take' to view a sample number of records in the table and check the data.\nFlights\n| take 100\n",
+        "title": "",
+        "dataSourceId": "2f7b784f-3727-429b-bf22-5f87279afcac"
+      }
+    ]
+  }
+}

@@ -1,0 +1,24 @@
+# Copy this file to rayfin/rayfin.yml before running `npx rayfin up`.
+# Your deployed hosting URL is added to allowedRedirectUris automatically
+# after the first deploy.
+id: skyfield-flight-intelligence
+name: skyfield-flight-intelligence
+version: 1.0.0
+services:
+  auth:
+    enabled: true
+    fabric:
+      enabled: true
+    allowedRedirectUris:
+      - http://localhost:5174
+  data:
+    enabled: false
+  storage:
+    enabled: false
+  staticHosting:
+    enabled: true
+    folder: dist
+    buildCommand: npm run build:fabric
+    indexDocument: index.html
+  functions:
+    enabled: false

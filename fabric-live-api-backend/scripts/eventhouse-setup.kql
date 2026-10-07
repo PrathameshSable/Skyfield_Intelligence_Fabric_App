@@ -1,0 +1,42 @@
+// ─────────────────────────────────────────────────────────────────────────────
+// Eventhouse (KQL DB) setup for fabric-live-api-backend
+// Run these in your Fabric Eventhouse KQL queryset (Real-Time Intelligence).
+// The table schema matches the normalized LiveEvent in src/types.ts.
+// ─────────────────────────────────────────────────────────────────────────────
+
+// 1) Target table — one row per event.
+.create-merge table LiveEvents (
+    id: string,
+    source: string,
+    kind: string,
+    metric: string,
+    value: real,
+    unit: string,
+    eventTime: datetime,
+    ingestedAt: datetime,
+    payload: dynamic
+)
+
+// 2) JSON ingestion mapping — maps the Eventstream JSON body to columns.
+//    The Eventstream → KQL destination wizard can also create this for you;
+//    define it explicitly so the contract is version-controlled.
+.create-or-alter table LiveEvents ingestion json mapping "LiveEventsJson"
+```
+[
+  { "column": "id",         "path": "$.id" },
+  { "column": "source",     "path": "$.source" },
+  { "column": "kind",       "path": "$.kind" },
+  { "column": "metric",     "path": "$.metric" },
+  { "column": "value",      "path": "$.value" },
+  { "column": "unit",       "path": "$.unit" },
+  { "column": "eventTime",  "path": "$.eventTime" },
+  { "column": "ingestedAt", "path": "$.ingestedAt" },
+  { "column": "payload",    "path": "$.payload" }
+]
+```
+
+// 3) (Optional) Keep a rolling window — adjust retention to taste.
+.alter-merge table LiveEvents policy retention softdelete = 30d
+
+// 4) Quick sanity check once data is flowing:
+// LiveEvents | sort by ingestedAt desc | take 20

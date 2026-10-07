@@ -1,0 +1,10 @@
+// KQL script
+// Use management commands in this script to configure your database items, such as tables, functions, materialized views, and more.
+
+
+.create-merge table Flights (icao24:string, callsign:string, originCountry:string, longitude:real, latitude:real, geoAltitude:real, baroAltitude:real, velocity:real, heading:real, verticalRate:real, onGround:bool, lastContact:datetime, ingestedAt:datetime, originLat:real, originLon:real, originIata:string, destLat:real, destLon:real, destIata:string, airline:string, manufacturer:string, aircraftType:string) 
+.create-or-alter table Flights ingestion json mapping 'FlightsJson'
+```
+[{"Properties":{"Path":"$.icao24"},"column":"icao24","datatype":""},{"Properties":{"Path":"$.callsign"},"column":"callsign","datatype":""},{"Properties":{"Path":"$.originCountry"},"column":"originCountry","datatype":""},{"Properties":{"Path":"$.longitude"},"column":"longitude","datatype":""},{"Properties":{"Path":"$.latitude"},"column":"latitude","datatype":""},{"Properties":{"Path":"$.geoAltitude"},"column":"geoAltitude","datatype":""},{"Properties":{"Path":"$.baroAltitude"},"column":"baroAltitude","datatype":""},{"Properties":{"Path":"$.velocity"},"column":"velocity","datatype":""},{"Properties":{"Path":"$.heading"},"column":"heading","datatype":""},{"Properties":{"Path":"$.verticalRate"},"column":"verticalRate","datatype":""},{"Properties":{"Path":"$.onGround"},"column":"onGround","datatype":""},{"Properties":{"Path":"$.lastContact"},"column":"lastContact","datatype":""},{"Properties":{"Path":"$.ingestedAt"},"column":"ingestedAt","datatype":""},{"Properties":{"Path":"$.originLat"},"column":"originLat","datatype":""},{"Properties":{"Path":"$.originLon"},"column":"originLon","datatype":""},{"Properties":{"Path":"$.originIata"},"column":"originIata","datatype":""},{"Properties":{"Path":"$.destLat"},"column":"destLat","datatype":""},{"Properties":{"Path":"$.destLon"},"column":"destLon","datatype":""},{"Properties":{"Path":"$.destIata"},"column":"destIata","datatype":""}]
+```
+.alter table Flights policy retention @'{"SoftDeletePeriod":"00:15:00","Recoverability":"Enabled"}'

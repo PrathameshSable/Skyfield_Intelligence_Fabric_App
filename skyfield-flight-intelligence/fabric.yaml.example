@@ -1,0 +1,10 @@
+# Copy to fabric.yaml and fill in YOUR ids, then:
+#   npx fabric-app-data generate -o src/fabric.generated.ts
+# The connection alias "flightsModel" is what createFabricFlightProvider() uses.
+activeProfile: default
+profiles:
+  default:
+    semanticModels:
+      flightsModel:
+        workspaceId: <YOUR workspace guid>
+        itemId: <YOUR flight semantic model guid>

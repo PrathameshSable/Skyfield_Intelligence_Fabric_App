@@ -1,0 +1,59 @@
+// ─────────────────────────────────────────────────────────────────────────────
+// DAX measures for the flight-intelligence semantic model.
+//
+// Paste this whole block into the semantic model's DAX QUERY VIEW, then:
+//   1) Click Run  → confirms the measures compute (returns one result row).
+//   2) Above each MEASURE line, click the "Update model: Add new measure"
+//      CodeLens to save it into the model (or "Add all measures from query").
+//
+// Replace `Flights` everywhere if your model's table has a different name.
+// Built for a semantic model over the Eventhouse `Flights` table.
+// ─────────────────────────────────────────────────────────────────────────────
+
+DEFINE
+    // ── Core counts ──────────────────────────────────────────────────────────
+    MEASURE Flights[Active Flights] = DISTINCTCOUNT ( Flights[icao24] )
+    MEASURE Flights[Airborne Flights] =
+        CALCULATE ( DISTINCTCOUNT ( Flights[icao24] ), Flights[onGround] = FALSE() )
+    MEASURE Flights[Grounded Flights] =
+        CALCULATE ( DISTINCTCOUNT ( Flights[icao24] ), Flights[onGround] = TRUE() )
+    MEASURE Flights[Countries Tracked] = DISTINCTCOUNT ( Flights[originCountry] )
+
+    // ── Altitude ─────────────────────────────────────────────────────────────
+    MEASURE Flights[Avg Altitude (m)] =
+        AVERAGEX ( FILTER ( Flights, NOT ISBLANK ( Flights[geoAltitude] ) ), Flights[geoAltitude] )
+    MEASURE Flights[Max Altitude (m)] = MAX ( Flights[geoAltitude] )
+    MEASURE Flights[Avg Altitude (ft)] = [Avg Altitude (m)] * 3.28084
+
+    // ── Speed ────────────────────────────────────────────────────────────────
+    MEASURE Flights[Avg Speed (m/s)] =
+        AVERAGEX ( FILTER ( Flights, NOT ISBLANK ( Flights[velocity] ) ), Flights[velocity] )
+    MEASURE Flights[Avg Speed (km/h)] = [Avg Speed (m/s)] * 3.6
+    MEASURE Flights[Max Speed (km/h)] = MAX ( Flights[velocity] ) * 3.6
+
+    // ── Climb / descent split (vertical rate in m/s) ─────────────────────────
+    MEASURE Flights[Climbing] =
+        CALCULATE ( DISTINCTCOUNT ( Flights[icao24] ), Flights[verticalRate] > 0.5 )
+    MEASURE Flights[Descending] =
+        CALCULATE ( DISTINCTCOUNT ( Flights[icao24] ), Flights[verticalRate] < -0.5 )
+    MEASURE Flights[Cruising] = [Airborne Flights] - [Climbing] - [Descending]
+
+EVALUATE
+    ROW (
+        "Active Flights", [Active Flights],
+        "Airborne", [Airborne Flights],
+        "Avg Altitude (ft)", [Avg Altitude (ft)],
+        "Avg Speed (km/h)", [Avg Speed (km/h)]
+    )
+
+// ── Example query the app runs for the "Top Countries" panel ─────────────────
+// EVALUATE
+//   TOPN (
+//     10,
+//     SUMMARIZECOLUMNS (
+//       Flights[originCountry],
+//       "Flights", [Active Flights],
+//       "AvgAltFt", [Avg Altitude (ft)]
+//     ),
+//     [Active Flights], DESC
+//   )
