@@ -1,0 +1,79 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<meta name="theme-color" content="#03060f" />
+<title>Skyfield Remote</title>
+<style>
+  :root { color-scheme: dark; }
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  html, body { margin: 0; height: 100%; background: #03060f; color: #e8f0ff;
+    font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; }
+  body { display: flex; flex-direction: column; gap: 12px; max-width: 460px; margin: 0 auto;
+    padding: max(14px, env(safe-area-inset-top)) 16px max(16px, env(safe-area-inset-bottom)); }
+  h1 { margin: 0; font-size: 18px; letter-spacing: 4px; font-weight: 800; }
+  h1 span { font-size: 11px; letter-spacing: 2px; color: #8fa3c4; font-weight: 600; text-transform: uppercase; }
+  #status { margin: 0; min-height: 20px; font-size: 13px; color: #8fa3c4; }
+  #status.ok { color: #3df08a; }
+  #status.bad { color: #ff8c6b; }
+  main { flex: 1; display: grid; grid-template-columns: repeat(6, 1fr); gap: 10px; align-content: center; }
+  button { grid-column: span 2; min-height: 64px; border-radius: 14px; border: 1px solid #24365a;
+    background: #0d1930; color: inherit; font: inherit; font-size: 15px; font-weight: 700;
+    touch-action: manipulation; user-select: none; }
+  button:active { background: #1c3566; transform: scale(0.97); }
+  button:focus-visible { outline: 2px solid #ffd166; outline-offset: 2px; }
+  button:disabled { opacity: 0.35; }
+  button small { display: block; font-size: 11px; font-weight: 600; color: #8fa3c4; margin-top: 2px; }
+  main i { grid-column: span 2; } /* empty corners of the direction pad */
+  .half { grid-column: span 3; }
+  .gold { border-color: #ffd166; color: #ffd166; }
+</style>
+</head>
+<body>
+  <h1>SKYFIELD <span>remote</span></h1>
+  <p id="status" role="status"></p>
+  <main>
+    <i></i><button data-a="prevFlight">▲<small>Flight</small></button><i></i>
+    <button data-a="prevCountry">◀<small>Country</small></button>
+    <button class="gold" data-a="follow">Follow</button>
+    <button data-a="nextCountry">▶<small>Country</small></button>
+    <i></i><button data-a="nextFlight">▼<small>Flight</small></button><i></i>
+    <button class="half" data-a="zoomOut">− Zoom out</button>
+    <button class="half" data-a="zoomIn">+ Zoom in</button>
+    <button class="half" data-a="tour">Auto tour</button>
+    <button class="half" data-a="clean">Clean view</button>
+    <button data-a="orbit">Orbit</button>
+    <button data-a="lighting">Lighting</button>
+    <button data-a="reset">Reset</button>
+  </main>
+<script>
+  // Must match RELAY and the "skyfield-" topic prefix in src/services/remoteLink.ts.
+  // Only the action name is sent; the code in the address comes from the QR on the Skyfield screen.
+  const code = location.hash.slice(1).replace(/[^a-z0-9]/g, "");
+  const statusEl = document.getElementById("status");
+  const say = (text, cls) => { statusEl.textContent = text; statusEl.className = cls || ""; };
+  const buttons = document.querySelectorAll("button[data-a]");
+
+  if (code.length < 8) {
+    say("Scan the QR code on the Skyfield screen to connect.", "bad");
+    buttons.forEach((b) => (b.disabled = true));
+  } else {
+    say("Connected. Tap a button to drive the globe.");
+    buttons.forEach((b) =>
+      b.addEventListener("click", async () => {
+        if (navigator.vibrate) navigator.vibrate(12);
+        try {
+          const res = await fetch("https://ntfy.sh/skyfield-" + code, { method: "POST", body: b.dataset.a });
+          if (res.ok) say("Sent: " + b.dataset.a, "ok");
+          else if (res.status === 429) say("Too many taps. Wait a few seconds.", "bad");
+          else say("Relay error " + res.status, "bad");
+        } catch {
+          say("No connection. Check the phone's internet.", "bad");
+        }
+      }),
+    );
+  }
+</script>
+</body>
+</html>
