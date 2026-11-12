@@ -135,7 +135,8 @@ html, body {
 }
 /* Aircraft detail always shows in full; Controls is compact and is the one that scrolls if space ever runs out. */
 .panel--right { max-width: none; flex: 0 0 auto; }
-.panel--controls { flex: 0 1 auto; min-height: 0; overflow-y: auto; margin-top: auto; }
+/* If it ever has to scroll: a thin bar, and never a sideways one (a wide bar squeezed the chips and cut them off). */
+.panel--controls { flex: 0 1 auto; min-height: 0; overflow: hidden auto; scrollbar-width: thin; margin-top: auto; }
 .panel--search { left: 22px; top: 330px; width: 260px; }
 .panel--muted .hint { color: var(--muted); font-size: 12px; line-height: 1.5; margin: 0; }
 
@@ -223,7 +224,7 @@ html, body {
 
 /* ── Flight detail ──────────────────────────────────────────────────────────*/
 .detail-grid {
-  display: grid; grid-template-columns: auto 1fr; gap: 4px 12px; font-size: 12px;
+  display: grid; grid-template-columns: auto 1fr; gap: 3px 12px; font-size: 12px;
 }
 .detail-grid span { color: var(--muted); }
 .detail-grid b { text-align: right; font-weight: 600; }
@@ -323,7 +324,7 @@ html, body {
 .ctl--row span { margin: 0; }
 .ctl--row { display: flex; justify-content: space-between; align-items: center; }
 /* Compact Controls: every row is label | control on one shared grid, so the panel reads as a tidy table. */
-.panel--controls .ctl { margin-bottom: 11px; }
+.panel--controls .ctl { margin-bottom: 9px; }
 .ctl--slider, .ctl--inline { display: grid; grid-template-columns: 68px 1fr; align-items: center; column-gap: 12px; }
 .ctl--slider { grid-template-columns: 68px 34px 1fr; column-gap: 8px; }
 .ctl--slider span, .ctl--inline > span { margin-bottom: 0; }

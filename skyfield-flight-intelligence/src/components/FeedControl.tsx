@@ -124,9 +124,10 @@ export function FeedControl({
     title = "Stopping the feed…";
   } else if (fresh) {
     state = "on";
-    title = `Live${regionLabel ? ` · ${regionLabel}` : ""}`;
     const left = mine && runStart ? Math.ceil((runStart + mine.minutes * 60_000 - now) / 60_000) : null;
-    detail = `${aircraft.toLocaleString()} aircraft · updated ${ago(now - lastUpdate!)}${left != null && left > 0 ? ` · ${left} min left` : ""}`;
+    // Time left sits in the title so the detail stays on one line: a third line pushed Controls into a scrollbar.
+    title = `Live${regionLabel ? ` · ${regionLabel}` : ""}${left != null && left > 0 ? ` · ${left} min left` : ""}`;
+    detail = `${aircraft.toLocaleString()} aircraft · updated ${ago(now - lastUpdate!)}`;
   } else if (active || busy === "start") {
     state = "starting";
     title = "Starting the feed…";
