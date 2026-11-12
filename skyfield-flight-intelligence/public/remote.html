@@ -105,9 +105,16 @@
     </section>
   </main>
 <script>
-  // Must match RELAY and the "skyfield-" topic prefix in src/services/remoteLink.ts.
-  // Only the action name (plus its argument, e.g. "band:low") is sent; the code in the address comes from the QR.
-  const code = location.hash.slice(1).replace(/[^a-z0-9]/g, "");
+  // The QR code puts a ready-made "add a message" address in the fragment: one Azure Storage queue for this
+  // session, with a pass that expires (built in src/services/remoteLink.ts). Each tap adds one message holding
+  // the action name (plus its argument, e.g. "band:low"). Only that queue address shape is accepted.
+  let target = "";
+  try {
+    target = decodeURIComponent(location.hash.slice(1));
+  } catch {
+    // malformed link: handled below
+  }
+  const linked = /^https:\/\/[a-z0-9]{3,24}\.queue\.core\.windows\.net\/skyfield-[a-z0-9]{8,}\/messages\?/.test(target);
   const statusEl = document.getElementById("status");
   const say = (text, cls) => { statusEl.textContent = text; statusEl.className = cls || ""; };
   const buttons = document.querySelectorAll("button[data-a]");
@@ -120,7 +127,7 @@
     }),
   );
 
-  if (code.length < 8) {
+  if (!linked) {
     say("Scan the QR code on the Skyfield screen to connect.", "bad");
     buttons.forEach((b) => (b.disabled = true));
   } else {
@@ -137,10 +144,13 @@
         }
         if (navigator.vibrate) navigator.vibrate(12);
         try {
-          const res = await fetch("https://ntfy.sh/skyfield-" + code, { method: "POST", body: message });
+          // Action names are plain letters, digits, ":" and "_", so they need no XML escaping.
+          const body = "<QueueMessage><MessageText>" + message + "</MessageText></QueueMessage>";
+          const res = await fetch(target, { method: "POST", body });
           if (res.ok) say("Sent: " + message.replace(/:/g, " "), "ok");
-          else if (res.status === 429) say("Too many taps. Wait a few seconds.", "bad");
-          else say("Relay error " + res.status, "bad");
+          else if (res.status === 403) say("This remote link has expired. Scan the QR code again.", "bad");
+          else if (res.status === 404) say("The big screen disconnected. Scan the QR code again.", "bad");
+          else say("Could not send (" + res.status + ")", "bad");
         } catch {
           say("No connection. Check the phone's internet.", "bad");
         }

@@ -3,7 +3,7 @@ import { resolveFlightSource } from "./data/flightSource.js";
 import { computeStats, hasRoute, type Flight, type FlightStats } from "./data/types.js";
 import { byRouteThenCallsign, DEFAULT_FILTER, makeFilterFn, type FlightFilter } from "./data/filter.js";
 import { keyToAction, step, type RemoteAction } from "./lib/remoteKeys.js";
-import { listenForRemote, newRemoteCode, REMOTE_ENABLED, remoteUrl } from "./services/remoteLink.js";
+import { listenForRemote, newRemoteCode, REMOTE_ENABLED } from "./services/remoteLink.js";
 import { RemotePanel } from "./components/RemotePanel.js";
 import { Scene, type ZoomRequest } from "./three/Scene.js";
 import {
@@ -250,6 +250,7 @@ export default function App() {
   const [remoteCode, setRemoteCode] = useState<string | null>(null);
   const [remoteOpen, setRemoteOpen] = useState(false);
   const [remoteOnline, setRemoteOnline] = useState(false);
+  const [remoteUrl, setRemoteUrl] = useState<string | null>(null);
   useEffect(() => {
     if (!remoteCode) return;
     const disconnect = listenForRemote(
@@ -259,6 +260,7 @@ export default function App() {
         runAction(action, args);
       },
       setRemoteOnline,
+      setRemoteUrl,
     );
     return () => {
       disconnect();
@@ -348,7 +350,7 @@ export default function App() {
       {helpOpen && <HelpOverlay onClose={() => setHelpOpen(false)} />}
       {remoteOpen && remoteCode && (
         <RemotePanel
-          url={remoteUrl(remoteCode)}
+          url={remoteUrl}
           online={remoteOnline}
           onClose={() => setRemoteOpen(false)}
           onDisconnect={() => {
