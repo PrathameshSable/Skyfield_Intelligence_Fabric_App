@@ -46,6 +46,8 @@
     <button data-a="orbit">Orbit</button>
     <button data-a="lighting">Lighting</button>
     <button data-a="reset">Reset</button>
+    <button class="half" data-a="feedStart" data-confirm="Start the live feed? This runs a Fabric notebook with the region and time chosen on the big screen.">Start feed</button>
+    <button class="half" data-a="feedStop">Stop feed</button>
   </main>
 <script>
   // Must match RELAY and the "skyfield-" topic prefix in src/services/remoteLink.ts.
@@ -62,6 +64,7 @@
     say("Connected. Tap a button to drive the globe.");
     buttons.forEach((b) =>
       b.addEventListener("click", async () => {
+        if (b.dataset.confirm && !confirm(b.dataset.confirm)) return;
         if (navigator.vibrate) navigator.vibrate(12);
         try {
           const res = await fetch("https://ntfy.sh/skyfield-" + code, { method: "POST", body: b.dataset.a });
