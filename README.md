@@ -1,7 +1,7 @@
 # Skyfield Intelligence — Live Flight Intelligence on Microsoft Fabric
 
 A cinematic **3D globe of live aircraft**, built as a Microsoft **Fabric app (Rayfin)**.
-Real aircraft positions from the OpenSky Network are streamed through **Fabric
+Real aircraft positions from [adsb.fi](https://adsb.fi) open data are streamed through **Fabric
 Real-Time Intelligence** (Eventstream → Eventhouse), exposed through a Power BI
 **semantic model**, and rendered with React + react-three-fiber inside the Fabric
 portal.
@@ -21,8 +21,8 @@ portal.
 ## Architecture (as deployed)
 
 ```
-OpenSky /states/all (+ adsbdb route / airline / aircraft enrichment)
-        │  Fabric notebook: opensky_to_eventstream (Spark, polling loop)
+adsb.fi /api/v3 (one region per run) + adsbdb route / airline enrichment
+        │  Fabric notebook: opensky_to_eventstream (Python kernel, started/stopped from the app)
         ▼
 Eventstream "flights"  (Custom endpoint source "flight_pipe")
         │
@@ -34,14 +34,14 @@ Semantic model "Flights"  ──DAX (TOPN 6000 by ingestedAt)──►  Skyfield
                                                               (AppBackend, static hosting)
 ```
 
-| Fabric item (workspace *MK Rayfin Demo*, folder *Skyfield Intellignce*) | Type | In this repo |
+| Fabric item (workspace *Fabric Apps Demos*) | Type | In this repo |
 |---|---|---|
 | `skyfield-flight-intelligence` | AppBackend (Rayfin app) | [`skyfield-flight-intelligence/`](skyfield-flight-intelligence) — source |
 | `Flights` | Semantic model (DirectQuery → Eventhouse) | [`fabric-items/Flights.SemanticModel`](fabric-items/Flights.SemanticModel) — TMDL |
 | `Flights` | Report | [`fabric-items/Flights.Report`](fabric-items/Flights.Report) — PBIR |
 | `Flight_api` | Eventhouse + KQL database | [`fabric-items/Flight_api.Eventhouse`](fabric-items/Flight_api.Eventhouse), [`fabric-items/Flight_api.KQLDatabase`](fabric-items/Flight_api.KQLDatabase) — schema, ingestion mapping, retention |
 | `flights` | Eventstream | [`fabric-items/flights.Eventstream`](fabric-items/flights.Eventstream) — topology |
-| `opensky_to_eventstream` | Notebook | [`fabric-notebooks/opensky_to_eventstream.py`](fabric-notebooks/opensky_to_eventstream.py) — June 2026 copy, credentials as placeholders |
+| `opensky_to_eventstream` | Notebook | [`fabric-notebooks/opensky_to_eventstream.py`](fabric-notebooks/opensky_to_eventstream.py) — adsb.fi feed (Nov 2026), no secrets in it |
 
 `fabric-items/` uses the Fabric Git-integration folder format (`<name>.<Type>/` with
 `.platform`), so the items can be re-created via Fabric Git integration or the
@@ -62,7 +62,7 @@ Semantic model "Flights"  ──DAX (TOPN 6000 by ingestedAt)──►  Skyfield
 ```
 skyfield-flight-intelligence/   The Rayfin app (Vite + React 18 + three.js / r3f, @microsoft/fabric-app-data)
 fabric-items/                   Exported Fabric item definitions (semantic model, report, Eventhouse, KQL DB, Eventstream)
-fabric-notebooks/               OpenSky → Eventstream ingestion notebook (Python)
+fabric-notebooks/               adsb.fi → Eventstream feed notebook (Python)
 fabric-live-api-backend/        Optional Node/TS ingestion + write-back service (alternative to the notebook)
 FABRIC_DEPLOYMENT.md            End-to-end runbook: publish shell → build pipeline → go live
 docs/media/                     Screenshots and GIF
@@ -96,10 +96,28 @@ AppBackend item) was not part of the surviving backup, so on a fresh machine
 confirm with `--dry-run` that `rayfin up` targets the existing
 `skyfield-flight-intelligence` AppBackend rather than creating a new one.
 
-The ingestion notebook needs an OpenSky API client (`client_id` / `client_secret`)
-and the Eventstream custom-endpoint connection string. **Never commit them**:
-keep them in Azure Key Vault (`notebookutils.credentials.getSecret`) or paste
-them only into the Fabric copy of the notebook.
+## Live feed (Start / Stop in the app)
+
+OpenSky times out from Fabric (Azure egress is blocked), so since 2026-11-11 the
+feed notebook polls [adsb.fi open data](https://github.com/adsbfi/opendata)
+instead: one region per run (Europe, UK & Ireland, US East, Gulf, India), 250 NM
+circles at 1 request/s, a sweep every ~20–40 s. The country comes from the ICAO
+24-bit address block; routes come from adsbdb and are cached in
+`MK_Lakehouse/Files/skyfield_cache.json`. The notebook reads the Eventstream
+connection at run time, so it holds no secrets.
+
+Inside Fabric the **Controls** panel has a feed switch: pick a region and run
+length, **Start** runs the notebook through the Fabric job API
+(`jobType=RunNotebook` with `region` / `run_minutes` parameters), **Stop**
+cancels it. It needs Contributor on the workspace, takes 1–3 min to start, and
+stops by itself at the end of the run. The globe shows only aircraft seen in
+the last 10 minutes (`LIVE_WINDOW_MINUTES`, server clock), because the table's
+retention purge lags. Sign-in is a silent MSAL token for app
+registration *All Fabric Apps - Demo* (`b443fe41…`), whose SPA redirect list
+must include the app's hosting URL and `<hosting URL>/auth-popup.html`.
+
+adsb.fi data is for personal, non-commercial use and needs attribution, shown in
+the app. Coverage is good in Europe and the US, thinner in India and Asia.
 
 ## Provenance
 
@@ -109,11 +127,13 @@ the deployed app**: a production build of `skyfield-flight-intelligence/` (with
 the real `fabric.generated.ts` ids) reproduces the live `index.html`,
 `assets/index-A1pYMhnA.js`, `assets/index-UZLMZtKs.css` and both Earth textures
 exactly. The Fabric item definitions were exported from the workspace the same
-day via `getDefinition`.
+day via `getDefinition`. On 2026-11-11 the app was changed (adsb.fi feed with
+Start/Stop) and redeployed with Rayfin CLI 1.36.2 and `assetAccess: protected`,
+so it no longer matches that June build.
 
 ---
 
 Fan / learning project for Fabric + Rayfin + react-three-fiber, inspired by
 [jeantimex/flights-tracker](https://github.com/jeantimex/flights-tracker).
-Aircraft data © [OpenSky Network](https://opensky-network.org) contributors;
+Aircraft data: [adsb.fi](https://adsb.fi) (earlier builds: OpenSky Network);
 route enrichment via [adsbdb](https://www.adsbdb.com). MIT licensed.

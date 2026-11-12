@@ -1,17 +1,10 @@
-// AUTO-GENERATED connection config consumed by getFabricClient().
-//
-// Regenerate (authenticated, with your real ids in fabric.yaml) via:
-//   npx fabric-app-data generate -o src/fabric.generated.ts
-//
-// The committed placeholder ids let the app build and run in sample mode; the
-// live Fabric path uses whatever ids `generate` writes here at deploy time.
-import type { FabricConfig } from "@microsoft/fabric-app-data";
+// fabric.generated.ts — AUTO-GENERATED from fabric.yaml (profile: default). Do not edit.
 
-export const fabricConfig: FabricConfig = {
+export const fabricConfig = {
   semanticModels: {
-    flightsModel: {
-      workspaceId: "00000000-0000-0000-0000-000000000000",
-      itemId: "00000000-0000-0000-0000-000000000000",
+    'flightsModel': {
+      workspaceId: '69cb4790-1cc3-43cb-8904-1f115e71dfdd',
+      itemId: '7a4bb1bf-373f-403a-879f-304e2adf4918',
     },
   },
-};
+} as const;

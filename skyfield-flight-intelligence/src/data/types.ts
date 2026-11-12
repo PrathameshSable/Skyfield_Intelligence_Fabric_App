@@ -39,6 +39,8 @@ export interface FlightProvider {
   readonly name: string;
   /** Returns the latest known set of flights. */
   getFlights(): Promise<Flight[]>;
+  /** When the newest row was ingested (epoch ms), as of the last getFlights(). */
+  lastUpdate?(): number | null;
 }
 
 /** Aggregate stats derived from a flight set, for the HUD. */

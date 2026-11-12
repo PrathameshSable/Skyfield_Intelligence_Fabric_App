@@ -1,5 +1,7 @@
+import { useEffect, useRef } from "react";
 import type { Flight, FlightStats } from "../data/types.js";
 import type { AltitudeBand } from "../data/filter.js";
+import { REMOTE_ENABLED } from "../services/remoteLink.js";
 
 function Kpi({ label, value, accent }: { label: string; value: string; accent?: boolean }) {
   return (
@@ -11,11 +13,13 @@ function Kpi({ label, value, accent }: { label: string; value: string; accent?: 
 }
 
 export function KpiStrip({
-  stats, isLive, onHelp,
+  stats, isLive, onHelp, onRemote,
 }: {
   stats: FlightStats;
   isLive: boolean;
   onHelp: () => void;
+  /** Absent until a public page for the phone remote is configured. */
+  onRemote?: () => void;
 }) {
   return (
     <div className="hud hud--top">
@@ -27,6 +31,17 @@ export function KpiStrip({
         <button className="brand-help" onClick={onHelp} title="What am I looking at?">
           ?
         </button>
+        {onRemote && (
+          <button className="brand-help" onClick={onRemote} title="Phone remote" aria-label="Phone remote">
+            <svg viewBox="0 0 16 16" width="12" height="12" fill="currentColor" aria-hidden="true">
+              <path
+                fillRule="evenodd"
+                d="M1 1h6v6H1zm1.5 1.5v3h3v-3zM9 1h6v6H9zm1.5 1.5v3h3v-3zM1 9h6v6H1zm1.5 1.5v3h3v-3z"
+              />
+              <path d="M3.25 3.25h1.5v1.5h-1.5zM11.25 3.25h1.5v1.5h-1.5zM3.25 11.25h1.5v1.5h-1.5zM9 9h2v2H9zM13 9h2v2h-2zM11 11h2v2h-2zM9 13h2v2H9zM13 13h2v2h-2z" />
+            </svg>
+          </button>
+        )}
       </div>
       <div className="kpi-row">
         <Kpi label="Aircraft tracked" value={stats.total.toLocaleString()} accent />
@@ -115,6 +130,8 @@ const HELP_ITEMS: [string, string][] = [
   ["Aircraft makers (bottom)", "Boeing vs Airbus vs … split. Click a maker to filter to its fleet."],
   ["Controls", "Animation speed, marker size, colour-by (country/altitude), lighting (real-time/day/night), and toggles for flight paths, airports and auto-orbit."],
   ["Aircraft detail", "Click any plane: route, airline, aircraft type, position, altitude, speed, heading, climb/descent — and Follow to track it."],
+  ["Live feed", "Start / Stop in Controls runs a Fabric notebook that sweeps one region on adsb.fi open data (personal, non-commercial use) and streams it through Eventstream into the Eventhouse. Routes and airlines come from adsbdb."],
+  ["Phone remote / keyboard", `${REMOTE_ENABLED ? "Phone: press the QR button next to the help button, scan the QR code and tap the buttons. " : ""}Keyboard: click the app once, then: ← → country · ↑ ↓ flight · Enter follow · Space auto-orbit · + − or PgUp PgDn zoom · T auto tour · F clean view · L lighting · C colour · P paths · A airports · H help · Esc reset.`],
 ];
 
 export function HelpOverlay({ onClose }: { onClose: () => void }) {
@@ -142,23 +159,35 @@ export function HelpOverlay({ onClose }: { onClose: () => void }) {
 
 interface FlightsTableProps {
   country: string;
+  /** At most the first 300, already in list order. */
   flights: Flight[];
+  /** Counts for the whole country, not only the listed rows. */
+  total: number;
+  routed: number;
   onSelect: (f: Flight) => void;
   selectedIcao?: string;
 }
 
-export function FlightsTable({ country, flights, onSelect, selectedIcao }: FlightsTableProps) {
-  // Show flights that have a known route first.
-  const sorted = [...flights].sort(
-    (a, b) => Number(Boolean(b.originIata)) - Number(Boolean(a.originIata)),
-  );
-  const withRoute = flights.filter((f) => f.originIata).length;
+export function FlightsTable({ country, flights, total, routed, onSelect, selectedIcao }: FlightsTableProps) {
+  const sorted = flights;
+  // Keep the selected row in view when the remote steps to it. Scrolls the list only, never the page.
+  const listRef = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    const list = listRef.current;
+    const row = list?.querySelector(".flight-row--on");
+    if (!list || !row) return;
+    const r = row.getBoundingClientRect();
+    const l = list.getBoundingClientRect();
+    if (r.top < l.top || r.bottom > l.bottom) {
+      list.scrollTop += r.top - l.top - (l.height - r.height) / 2;
+    }
+  }, [selectedIcao]);
   return (
     <div className="panel panel--table">
       <div className="panel__title">
-        {country} · {flights.length} flights · {withRoute} routed
+        {country} · {total} flights · {routed} routed
       </div>
-      <div className="flights-list">
+      <div className="flights-list" ref={listRef}>
         {sorted.length === 0 && <p className="hint">No matching flights right now.</p>}
         {sorted.map((f) => {
           const hasR = f.originIata && f.destIata;

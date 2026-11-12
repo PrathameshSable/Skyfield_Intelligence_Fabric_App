@@ -74,6 +74,17 @@ export function matchesFilter(flight: Flight, filter: FlightFilter): boolean {
   return true;
 }
 
+/**
+ * Flights-list order: known routes first, then by callsign. Rows from one feed sweep share a timestamp, so the
+ * data's own order changes between refreshes; a fixed order keeps the list still and next/previous predictable.
+ */
+export function byRouteThenCallsign(a: Flight, b: Flight): number {
+  return (
+    Number(Boolean(b.originIata)) - Number(Boolean(a.originIata)) ||
+    (a.callsign ?? a.icao24).localeCompare(b.callsign ?? b.icao24)
+  );
+}
+
 /** Build a stable predicate for the current filter. */
 export function makeFilterFn(filter: FlightFilter): (f: Flight) => boolean {
   return (f) => matchesFilter(f, filter);

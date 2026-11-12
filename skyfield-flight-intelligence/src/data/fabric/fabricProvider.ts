@@ -56,8 +56,10 @@ function rowsToLatestFlights(columns: { name: string }[], rows: unknown[][]): Fl
  * snapshot forever and the globe would freeze.
  */
 export function createFabricFlightProvider(connection = "flightsModel"): FlightProvider {
+  let lastUpdate: number | null = null;
   return {
     name: "fabric",
+    lastUpdate: () => lastUpdate,
     async getFlights(): Promise<Flight[]> {
       const result = await getFabricClient()
         .semanticModel(connection)
@@ -65,7 +67,19 @@ export function createFabricFlightProvider(connection = "flightsModel"): FlightP
       if (result.status !== "success") {
         throw new Error(result.error.message);
       }
+      // rows come newest first, so the first row's ingestedAt is the latest
+      const at = result.table.columns.findIndex((c) => normalize(c.name) === "ingestedat");
+      lastUpdate = at >= 0 && result.table.rows.length ? toUtcMs(result.table.rows[0]![at]) : null;
       return rowsToLatestFlights(result.table.columns, result.table.rows);
     },
   };
+}
+
+/** Model datetimes are UTC; a string without a zone ("2026-11-11T16:26:57.913") must not be read as local time. */
+export function toUtcMs(v: unknown): number | null {
+  if (v instanceof Date) return v.getTime();
+  if (typeof v === "number" || typeof v === "bigint") return Number(v);
+  if (typeof v !== "string" || !v) return null;
+  const ms = Date.parse(/(Z|[+-]\d\d:?\d\d)$/i.test(v) ? v : `${v}Z`);
+  return Number.isNaN(ms) ? null : ms;
 }

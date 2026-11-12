@@ -5,6 +5,8 @@ dist/
 .env.*
 !.env.example
 !.env.sample
+# Holds only the public address of the phone remote page; without it the QR button is built off.
+!.env.production
 .DS_Store
 .vscode/
 

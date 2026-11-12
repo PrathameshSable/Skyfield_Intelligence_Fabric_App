@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState, type MutableRefObject } from "react";
 import { Canvas, useFrame, useThree } from "@react-three/fiber";
 import { OrbitControls, Stars, Billboard, Line, Html } from "@react-three/drei";
 import * as THREE from "three";
@@ -20,6 +20,8 @@ interface SceneProps {
   lighting: LightingMode;
   colorMode: ColorMode;
   follow: boolean;
+  /** Zoom requests from the remote keys; the render loop consumes them. */
+  zoom: MutableRefObject<ZoomRequest>;
   /** Re-frames the camera when this changes (e.g. the selected country). */
   frameKey: string;
   filterFn?: (f: Flight) => boolean;
@@ -28,21 +30,33 @@ interface SceneProps {
   onClearSelection: () => void;
 }
 
-/** Bright gold great-circle arc + airport endpoints for the selected flight. */
+/**
+ * The selected flight's route, drawn on the surface and through the plane itself: solid from the origin to where
+ * the plane is now, dashed from there to the destination. (A single bowed origin-to-destination arc floats high
+ * above the globe on long routes, and real flights leave the great circle, so the plane looked far off its route.)
+ */
 function SelectedRoute({ flight }: { flight: Flight }) {
-  const points = useMemo(() => {
+  const { latitude, longitude } = flight;
+  const legs = useMemo(() => {
     if (!hasRoute(flight)) return null;
-    return greatCircleArc(
-      flight.originLat!, flight.originLon!, flight.destLat!, flight.destLon!,
-      GLOBE_RADIUS * 1.016, { steps: 64 },
-    );
-  }, [flight]);
-  if (!points) return null;
+    const leg = (lat1: number, lon1: number, lat2: number, lon2: number) =>
+      greatCircleArc(lat1, lon1, lat2, lon2, GLOBE_RADIUS * 1.016, { steps: 48, maxLift: 0 });
+    return {
+      flown: leg(flight.originLat!, flight.originLon!, latitude, longitude),
+      ahead: leg(latitude, longitude, flight.destLat!, flight.destLon!),
+    };
+    // latitude/longitude are listed because live flight objects are moved in place between polls
+  }, [flight, latitude, longitude]);
+  if (!legs) return null;
   const o = latLonToVector3(flight.originLat!, flight.originLon!, GLOBE_RADIUS * 1.014);
   const d = latLonToVector3(flight.destLat!, flight.destLon!, GLOBE_RADIUS * 1.014);
   return (
     <group>
-      <Line points={points} color="#ffd166" lineWidth={2.5} transparent opacity={0.95} />
+      <Line points={legs.flown} color="#ffd166" lineWidth={2.5} transparent opacity={0.95} />
+      <Line
+        points={legs.ahead} color="#ffd166" lineWidth={2} transparent opacity={0.7}
+        dashed dashSize={0.05} gapSize={0.035}
+      />
       <mesh position={[o.x, o.y, o.z]}>
         <sphereGeometry args={[0.022, 12, 12]} />
         <meshBasicMaterial color="#5ff0a0" />
@@ -213,6 +227,41 @@ function AutoFrame({
   return null;
 }
 
+const CAMERA_HOME: [number, number, number] = [0, 1.6, 6];
+const HOME_DISTANCE = Math.hypot(...CAMERA_HOME);
+const MIN_DISTANCE = 3.2;
+const MAX_DISTANCE = 12;
+/** One zoom step moves the camera to 80% of its distance. */
+const ZOOM_STEP = 0.8;
+
+/** steps > 0 zooms in, < 0 out; home returns to the opening distance. */
+export interface ZoomRequest {
+  steps: number;
+  home: boolean;
+}
+
+/** Eases the camera in/out for the remote's zoom keys, within the mouse-wheel limits. */
+function RemoteZoom({ zoom }: { zoom: MutableRefObject<ZoomRequest> }) {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const controls = useThree((s) => s.controls) as any;
+  useFrame(({ camera }) => {
+    const z = zoom.current;
+    const d = camera.position.length();
+    if (z.home) {
+      z.home = false;
+      z.steps = Math.log(HOME_DISTANCE / d) / Math.log(ZOOM_STEP);
+    }
+    if (Math.abs(z.steps) < 0.01) return; // idle: the mouse wheel stays in charge
+    const part = z.steps * 0.15;
+    z.steps -= part;
+    const next = THREE.MathUtils.clamp(d * Math.pow(ZOOM_STEP, part), MIN_DISTANCE, MAX_DISTANCE);
+    if (next === MIN_DISTANCE || next === MAX_DISTANCE) z.steps = 0;
+    camera.position.setLength(next);
+    controls?.update();
+  });
+  return null;
+}
+
 /** A pulsing ring that marks the currently selected aircraft. */
 function SelectionMarker({ flight }: { flight: Flight }) {
   const ref = useRef<THREE.Mesh>(null);
@@ -236,7 +285,7 @@ function SelectionMarker({ flight }: { flight: Flight }) {
 export function Scene(props: SceneProps) {
   const {
     getFlights, advance, planeSize, speed, autoRotate, showArcs, showAirports, lighting,
-    colorMode, follow, frameKey, filterFn, selected, onSelect, onClearSelection,
+    colorMode, follow, zoom, frameKey, filterFn, selected, onSelect, onClearSelection,
   } = props;
   const following = follow && selected != null;
   // Stop spinning while you're inspecting a specific country or following a plane.
@@ -244,7 +293,7 @@ export function Scene(props: SceneProps) {
 
   return (
     <Canvas
-      camera={{ position: [0, 1.6, 6], fov: 45 }}
+      camera={{ position: CAMERA_HOME, fov: 45 }}
       dpr={[1, 2]}
       raycaster={{ params: { Points: { threshold: 0.04 } } as THREE.RaycasterParameters }}
       onPointerMissed={onClearSelection}
@@ -274,14 +323,15 @@ export function Scene(props: SceneProps) {
       {selected && <SelectedRoute flight={selected} />}
       <AutoFrame getFlights={getFlights} filterFn={filterFn} frameKey={frameKey} />
       {following && <FollowCamera getFlights={getFlights} icao24={selected!.icao24} />}
+      <RemoteZoom zoom={zoom} />
 
       <OrbitControls
         makeDefault
         enablePan={false}
         autoRotate={spin}
         autoRotateSpeed={0.35}
-        minDistance={3.2}
-        maxDistance={12}
+        minDistance={MIN_DISTANCE}
+        maxDistance={MAX_DISTANCE}
         rotateSpeed={0.5}
       />
     </Canvas>

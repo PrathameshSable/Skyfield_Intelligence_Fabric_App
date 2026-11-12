@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { matchesFilter, isFilterActive, EMPTY_FILTER } from "./filter.js";
+import { byRouteThenCallsign, matchesFilter, isFilterActive, EMPTY_FILTER } from "./filter.js";
 import type { Flight } from "./types.js";
 
 const base: Flight = {
@@ -54,5 +54,16 @@ describe("matchesFilter", () => {
     const grounded = { ...base, onGround: true };
     expect(matchesFilter(grounded, { ...EMPTY_FILTER, airborneOnly: true })).toBe(false);
     expect(matchesFilter(base, { ...EMPTY_FILTER, airborneOnly: true })).toBe(true);
+  });
+});
+
+describe("byRouteThenCallsign", () => {
+  it("gives the same order whatever order the data arrives in", () => {
+    const f = (callsign: string | null, originIata: string | null, icao24 = "x") =>
+      ({ ...base, callsign, originIata, icao24 }) as Flight;
+    const flights = [f("UAL9", null), f("BAW2", "LHR"), f(null, null, "aaa111"), f("AFR1", "CDG")];
+    const order = (list: Flight[]) => [...list].sort(byRouteThenCallsign).map((x) => x.callsign ?? x.icao24);
+    expect(order(flights)).toEqual(["AFR1", "BAW2", "aaa111", "UAL9"]);
+    expect(order([...flights].reverse())).toEqual(order(flights));
   });
 });

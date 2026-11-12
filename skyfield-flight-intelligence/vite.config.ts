@@ -41,5 +41,9 @@ export default defineConfig({
   },
   build: {
     commonjsOptions: { include: [/node_modules/] },
+    rollupOptions: {
+      // auth-popup.html: Microsoft sign-in redirect page for the feed's Start/Stop (src/services/msal.ts)
+      input: { main: resolve(projectRoot, "index.html"), auth: resolve(projectRoot, "auth-popup.html") },
+    },
   },
 });

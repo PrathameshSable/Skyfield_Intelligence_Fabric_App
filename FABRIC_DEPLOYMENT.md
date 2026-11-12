@@ -7,6 +7,12 @@ aircraft data**. It ties together the two projects in this repo:
 - **`fabric-live-api-backend`** — ingests OpenSky → Fabric Eventstream/Eventhouse
 - **`skyfield-flight-intelligence`** — the 3D globe Rayfin app you publish
 
+> **Update 2026-11-11:** the deployed app no longer uses OpenSky. OpenSky times
+> out from Fabric/Azure, so the feed is now the `opensky_to_eventstream` notebook
+> polling adsb.fi, started and stopped from the app (see *Live feed* in
+> [README.md](README.md)). The OpenSky backend below still works from a laptop.
+> Redeploys need Rayfin CLI ≥ 1.36 and `staticHosting.assetAccess: protected`.
+
 Plan: get the app **visible in the portal first** (sample data, ~10 min), then
 **build the data pipeline** and switch it to **live**.
 

@@ -39,6 +39,8 @@ html, body {
 }
 
 .stage canvas { display: block; }
+/* Clean view (remote key F): the globe alone. */
+.stage--clean .hud, .stage--clean .panel, .stage--clean .legend { display: none; }
 
 /* ── HUD shells ─────────────────────────────────────────────────────────────*/
 .hud, .panel, .legend {
@@ -131,8 +133,9 @@ html, body {
   position: relative; right: auto; top: auto; bottom: auto; left: auto;
   width: 100%; box-sizing: border-box; pointer-events: auto;
 }
-.panel--right { max-width: none; flex: 0 1 auto; min-height: 0; overflow-y: auto; }
-.panel--controls { flex: 0 0 auto; margin-top: auto; }
+/* Aircraft detail always shows in full; Controls is compact and is the one that scrolls if space ever runs out. */
+.panel--right { max-width: none; flex: 0 0 auto; }
+.panel--controls { flex: 0 1 auto; min-height: 0; overflow-y: auto; margin-top: auto; }
 .panel--search { left: 22px; top: 330px; width: 260px; }
 .panel--muted .hint { color: var(--muted); font-size: 12px; line-height: 1.5; margin: 0; }
 
@@ -220,7 +223,7 @@ html, body {
 
 /* ── Flight detail ──────────────────────────────────────────────────────────*/
 .detail-grid {
-  display: grid; grid-template-columns: auto 1fr; gap: 6px 12px; font-size: 12px;
+  display: grid; grid-template-columns: auto 1fr; gap: 4px 12px; font-size: 12px;
 }
 .detail-grid span { color: var(--muted); }
 .detail-grid b { text-align: right; font-weight: 600; }
@@ -285,6 +288,8 @@ html, body {
   font-weight: 800; font-size: 13px; font-family: var(--font); line-height: 1; flex: none;
 }
 .brand-help:hover { background: var(--accent); color: #02101f; }
+.brand-help svg { display: block; margin: auto; }
+.brand-help:has(svg) { border-radius: 6px; padding: 0; }
 .help-overlay {
   position: absolute; inset: 0; z-index: 10; display: grid; place-items: center;
   background: rgba(2, 6, 14, 0.78); backdrop-filter: blur(4px);
@@ -293,6 +298,12 @@ html, body {
   width: 880px; max-height: 600px; overflow-y: auto; padding: 22px 26px;
   border: 1px solid var(--glass-line); background: rgba(8, 16, 30, 0.96); border-radius: 16px;
 }
+.remote-card { width: 340px; text-align: center; }
+.remote-qr { width: 240px; height: 240px; border-radius: 10px; image-rendering: pixelated; }
+.remote-hint { margin: 12px 0 6px; font-size: 12px; color: var(--muted); line-height: 1.5; }
+.remote-status { margin: 0 0 6px; font-size: 12px; font-weight: 700; color: var(--muted); }
+.remote-status--on { color: #3df08a; }
+.remote-url { margin: 0 0 12px; font-size: 10px; color: var(--muted); word-break: break-all; user-select: all; }
 .help-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; }
 .help-head span { font-size: 18px; font-weight: 800; letter-spacing: 1px; }
 .help-close { background: none; border: none; color: var(--muted); font-size: 18px; cursor: pointer; }
@@ -311,7 +322,36 @@ html, body {
 .ctl input[type="range"] { width: 100%; accent-color: var(--accent); }
 .ctl--row span { margin: 0; }
 .ctl--row { display: flex; justify-content: space-between; align-items: center; }
+/* Compact Controls: every row is label | control on one shared grid, so the panel reads as a tidy table. */
+.panel--controls .ctl { margin-bottom: 11px; }
+.ctl--slider, .ctl--inline { display: grid; grid-template-columns: 68px 1fr; align-items: center; column-gap: 12px; }
+.ctl--slider { grid-template-columns: 68px 34px 1fr; column-gap: 8px; }
+.ctl--slider span, .ctl--inline > span { margin-bottom: 0; }
+.ctl--slider em { text-align: right; }
+.ctl--inline .band-row { margin: 0; }
 .source-tag { margin-top: 6px; font-size: 10px; letter-spacing: 1px; color: var(--gold); }
+
+/* ── Live feed switch (inside Controls, Fabric only) ────────────────────────*/
+.feed { margin-top: 4px; padding-top: 10px; border-top: 1px solid var(--glass-line); }
+.feed__status { display: flex; gap: 8px; align-items: flex-start; margin-bottom: 8px; }
+.feed__dot { flex: 0 0 8px; height: 8px; margin-top: 4px; border-radius: 50%; background: var(--muted); }
+.feed__dot--on { background: #5ff0a0; box-shadow: 0 0 8px #5ff0a0; }
+.feed__dot--starting { background: var(--gold); animation: feed-pulse 1.2s ease-in-out infinite; }
+@keyframes feed-pulse { 50% { opacity: 0.3; } }
+.feed__text { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.feed__text b { font-size: 12px; color: var(--ink); }
+.feed__text span { font-size: 11px; color: var(--muted); line-height: 1.35; }
+.feed__start { display: flex; gap: 6px; }
+.feed__start select {
+  flex: 1; min-width: 0; padding: 4px; border-radius: 7px; font-family: var(--font); font-size: 11px;
+  background: rgba(255, 255, 255, 0.05); color: var(--ink); border: 1px solid var(--glass-line);
+}
+.feed__start select option { background: #0a1628; }
+.feed__btn { flex: 0 0 auto; padding: 5px 10px; }
+.feed > .feed__btn { width: 100%; }
+.feed__btn:disabled { opacity: 0.5; cursor: default; }
+.feed__error { margin: 6px 0 0; font-size: 11px; color: #ff8c6b; line-height: 1.4; }
+.feed__credit { display: block; margin-top: 6px; font-size: 10px; letter-spacing: 0.5px; color: var(--muted); }
 
 /* ── Legend ─────────────────────────────────────────────────────────────────*/
 .legend {

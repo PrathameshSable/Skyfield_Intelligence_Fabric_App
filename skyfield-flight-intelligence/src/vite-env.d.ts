@@ -9,6 +9,8 @@ interface ImportMetaEnv {
   readonly VITE_FABRIC_ITEM_ID?: string;
   /** Fabric portal base URL (e.g. https://app.fabric.microsoft.com/). */
   readonly VITE_FABRIC_PORTAL_URL?: string;
+  /** Public address of remote.html for the phone remote (the app's own hosting needs Fabric sign-in). */
+  readonly VITE_REMOTE_URL?: string;
 }
 
 interface ImportMeta {

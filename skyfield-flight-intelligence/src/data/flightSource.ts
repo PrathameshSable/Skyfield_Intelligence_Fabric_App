@@ -15,16 +15,27 @@ export interface FlightSource {
   setCount?(count: number): void;
   start?(): void;
   stop?(): void;
+  /** Live only: when the newest row was ingested (epoch ms). */
+  lastUpdate?(): number | null;
 }
 
-/** Dead-reckon airborne flights along their heading (shared by both sources). */
+const METRES_PER_DEGREE = 111_320;
+/** Without fresh data for this long, live planes stop moving instead of flying on blind. */
+const MAX_COAST_MS = 30_000;
+
+/**
+ * Dead-reckon airborne live flights along their heading at their real speed, so a plane stays on its true track
+ * (and its drawn route) between polls. Any exaggeration here walks planes hundreds of km off their routes.
+ */
 export function deadReckon(flights: Flight[], dtSeconds: number): void {
   for (const f of flights) {
     if (f.onGround || f.velocity == null || f.heading == null) continue;
-    const degPerSec = (f.velocity / 111_320) * 60;
+    const degPerSec = f.velocity / METRES_PER_DEGREE;
     const rad = (f.heading * Math.PI) / 180;
+    // a degree of longitude shrinks with latitude
+    const lonScale = Math.max(Math.cos((f.latitude * Math.PI) / 180), 0.05);
     f.latitude += Math.cos(rad) * degPerSec * dtSeconds;
-    f.longitude += Math.sin(rad) * degPerSec * dtSeconds;
+    f.longitude += (Math.sin(rad) * degPerSec * dtSeconds) / lonScale;
     if (f.latitude > 85 || f.latitude < -85) f.heading = (f.heading + 180) % 360;
     if (f.longitude > 180) f.longitude -= 360;
     if (f.longitude < -180) f.longitude += 360;
@@ -41,6 +52,8 @@ export class LiveFlightSource implements FlightSource {
   readonly isLive = true;
   private flights: Flight[] = [];
   private timer: ReturnType<typeof setInterval> | null = null;
+  private lastGoodPoll = 0;
+  private lastTick = 0;
 
   constructor(
     private readonly provider: FlightProvider,
@@ -60,17 +73,27 @@ export class LiveFlightSource implements FlightSource {
   private async poll(): Promise<void> {
     try {
       this.flights = await this.provider.getFlights();
+      this.lastGoodPoll = performance.now();
     } catch {
-      // keep the last good set; the render loop keeps dead-reckoning it
+      // keep the last good set; it coasts for MAX_COAST_MS, then holds still
     }
   }
 
-  advance(dt: number): void {
+  /** Runs on the wall clock: live planes move in real time, whatever the sample-only speed slider says. */
+  advance(): void {
+    const now = performance.now();
+    const dt = Math.min((now - this.lastTick) / 1000, 1);
+    this.lastTick = now;
+    if (now - this.lastGoodPoll > MAX_COAST_MS) return;
     deadReckon(this.flights, dt);
   }
 
   current(): Flight[] {
     return this.flights;
+  }
+
+  lastUpdate(): number | null {
+    return this.provider.lastUpdate?.() ?? null;
   }
 }
 

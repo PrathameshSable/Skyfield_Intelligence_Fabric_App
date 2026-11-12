@@ -18,9 +18,9 @@ interface FlightArcsProps {
 }
 
 /**
- * Flight-path arcs. When a flight has a resolved route (origin + destination
- * airports), draws the full great-circle arc between them — like an airline
- * route map. Otherwise falls back to a short velocity-based heading trail.
+ * Flight-path lines. When a flight has a resolved route (origin + destination
+ * airports), draws origin -> plane -> destination along the surface.
+ * Otherwise falls back to a short velocity-based heading trail.
  * Altitude-colored, rebuilt a few times a second. Rebuilt off-frame for perf.
  */
 export function FlightArcs({ getFlights, colorMode, filterFn }: FlightArcsProps) {
@@ -57,9 +57,13 @@ export function FlightArcs({ getFlights, colorMode, filterFn }: FlightArcsProps)
       let arc: THREE.Vector3[];
       let fade = false;
       if (hasRoute(f)) {
-        arc = greatCircleArc(f.originLat!, f.originLon!, f.destLat!, f.destLon!, SURFACE, {
-          steps: ROUTE_STEPS,
-        });
+        // On the surface and through the plane (origin -> plane -> destination), so every aircraft sits on its
+        // own line. One bowed origin-to-destination arc floats far from the plane on long routes.
+        const leg = { steps: ROUTE_STEPS / 2, maxLift: 0 };
+        arc = [
+          ...greatCircleArc(f.originLat!, f.originLon!, f.latitude, f.longitude, SURFACE, leg),
+          ...greatCircleArc(f.latitude, f.longitude, f.destLat!, f.destLon!, SURFACE, leg).slice(1),
+        ];
       } else {
         const speed = f.velocity ?? 0;
         if (f.onGround || f.heading == null || speed < 20) continue;

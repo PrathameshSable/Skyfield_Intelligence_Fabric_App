@@ -1,0 +1,152 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<meta name="theme-color" content="#03060f" />
+<title>Skyfield Remote</title>
+<style>
+  :root { color-scheme: dark; }
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  html, body { margin: 0; height: 100%; background: #03060f; color: #e8f0ff;
+    font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; }
+  body { display: flex; flex-direction: column; gap: 12px; max-width: 460px; margin: 0 auto;
+    padding: max(14px, env(safe-area-inset-top)) 16px max(16px, env(safe-area-inset-bottom)); }
+  h1 { margin: 0; font-size: 18px; letter-spacing: 4px; font-weight: 800; }
+  h1 span { font-size: 11px; letter-spacing: 2px; color: #8fa3c4; font-weight: 600; text-transform: uppercase; }
+  #status { margin: 0; min-height: 20px; font-size: 13px; color: #8fa3c4; }
+  #status.ok { color: #3df08a; }
+  #status.bad { color: #ff8c6b; }
+  nav { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+  nav button { grid-column: auto; min-height: 44px; border-radius: 12px; font-size: 14px; color: #8fa3c4; background: transparent; }
+  nav button[aria-selected="true"] { color: #02101f; background: #3aa0ff; border-color: #3aa0ff; }
+  main { flex: 1; display: grid; align-content: center; }
+  section { display: grid; grid-template-columns: repeat(6, 1fr); gap: 10px; }
+  section[hidden] { display: none; }
+  h2 { grid-column: 1 / -1; margin: 8px 0 -4px; font-size: 11px; letter-spacing: 2px; font-weight: 600;
+    text-transform: uppercase; color: #8fa3c4; }
+  button { grid-column: span 2; min-height: 64px; border-radius: 14px; border: 1px solid #24365a;
+    background: #0d1930; color: inherit; font: inherit; font-size: 15px; font-weight: 700;
+    touch-action: manipulation; user-select: none; }
+  button:active { background: #1c3566; transform: scale(0.97); }
+  button:focus-visible, select:focus-visible { outline: 2px solid #ffd166; outline-offset: 2px; }
+  button:disabled { opacity: 0.35; }
+  button small { display: block; font-size: 11px; font-weight: 600; color: #8fa3c4; margin-top: 2px; }
+  select { grid-column: span 3; min-height: 48px; border-radius: 14px; border: 1px solid #24365a;
+    background: #0d1930; color: inherit; font: inherit; font-size: 15px; font-weight: 600; padding: 0 12px; }
+  section i { grid-column: span 2; } /* empty corners of the direction pad */
+  .half { grid-column: span 3; }
+  .full { grid-column: 1 / -1; }
+  .slim { min-height: 52px; }
+  .gold { border-color: #ffd166; color: #ffd166; }
+</style>
+</head>
+<body>
+  <h1>SKYFIELD <span>remote</span></h1>
+  <p id="status" role="status"></p>
+  <nav role="tablist" aria-label="Remote sections">
+    <button role="tab" data-tab="drive" aria-selected="true">Drive</button>
+    <button role="tab" data-tab="filters" aria-selected="false">Filters</button>
+    <button role="tab" data-tab="feed" aria-selected="false">Feed</button>
+  </nav>
+  <main>
+    <section id="drive">
+      <i></i><button data-a="prevFlight">▲<small>Flight</small></button><i></i>
+      <button data-a="prevCountry">◀<small>Country</small></button>
+      <button class="gold" data-a="follow">Follow</button>
+      <button data-a="nextCountry">▶<small>Country</small></button>
+      <i></i><button data-a="nextFlight">▼<small>Flight</small></button><i></i>
+      <button class="half" data-a="zoomOut">− Zoom out</button>
+      <button class="half" data-a="zoomIn">+ Zoom in</button>
+      <button class="half" data-a="tour">Auto tour</button>
+      <button class="half" data-a="clean">Clean view</button>
+      <button data-a="orbit">Orbit</button>
+      <button data-a="lighting">Lighting</button>
+      <button data-a="reset">Reset</button>
+    </section>
+
+    <section id="filters" hidden>
+      <h2>Altitude</h2>
+      <button class="half slim" data-a="band:all">All altitudes</button>
+      <button class="half slim" data-a="band:low">Low</button>
+      <button class="half slim" data-a="band:mid">Mid</button>
+      <button class="half slim" data-a="band:high">High</button>
+      <h2>Aircraft maker</h2>
+      <button class="slim" data-a="maker:prev">◀<small>Maker</small></button>
+      <button class="slim" data-a="maker:all">All makers</button>
+      <button class="slim" data-a="maker:next">▶<small>Maker</small></button>
+      <h2>Flights (tap to switch on or off)</h2>
+      <button class="half slim" data-a="airborne">Airborne only</button>
+      <button class="half slim" data-a="airlinesOnly">Airlines only</button>
+      <h2>Show (tap to switch on or off)</h2>
+      <button class="slim" data-a="paths">Paths</button>
+      <button class="slim" data-a="airports">Airports</button>
+      <button class="slim" data-a="colorBy">Colour<small>country / altitude</small></button>
+      <button class="full slim gold" data-a="reset">Clear all filters</button>
+    </section>
+
+    <section id="feed" hidden>
+      <!-- Region ids and minutes must match REGIONS and RUN_MINUTES in the app (src/services/feed.ts, FeedControl.tsx). -->
+      <h2>Region and run time</h2>
+      <select id="region" aria-label="Feed region">
+        <option value="europe">Europe</option>
+        <option value="uk">UK &amp; Ireland</option>
+        <option value="us_east">US East</option>
+        <option value="gulf">Gulf</option>
+        <option value="india">India</option>
+      </select>
+      <select id="minutes" aria-label="Run the feed for">
+        <option value="15">15 min</option>
+        <option value="30" selected>30 min</option>
+        <option value="60">60 min</option>
+      </select>
+      <button class="half gold" data-a="feedStart">Start feed</button>
+      <button class="half" data-a="feedStop">Stop feed</button>
+    </section>
+  </main>
+<script>
+  // Must match RELAY and the "skyfield-" topic prefix in src/services/remoteLink.ts.
+  // Only the action name (plus its argument, e.g. "band:low") is sent; the code in the address comes from the QR.
+  const code = location.hash.slice(1).replace(/[^a-z0-9]/g, "");
+  const statusEl = document.getElementById("status");
+  const say = (text, cls) => { statusEl.textContent = text; statusEl.className = cls || ""; };
+  const buttons = document.querySelectorAll("button[data-a]");
+
+  const tabs = document.querySelectorAll("nav button");
+  tabs.forEach((tab) =>
+    tab.addEventListener("click", () => {
+      tabs.forEach((t) => t.setAttribute("aria-selected", String(t === tab)));
+      document.querySelectorAll("section").forEach((s) => (s.hidden = s.id !== tab.dataset.tab));
+    }),
+  );
+
+  if (code.length < 8) {
+    say("Scan the QR code on the Skyfield screen to connect.", "bad");
+    buttons.forEach((b) => (b.disabled = true));
+  } else {
+    say("Connected. Tap a button to drive the globe.");
+    buttons.forEach((b) =>
+      b.addEventListener("click", async () => {
+        let message = b.dataset.a;
+        if (message === "feedStart") {
+          const region = document.getElementById("region");
+          const minutes = document.getElementById("minutes").value;
+          const label = region.options[region.selectedIndex].text;
+          if (!confirm("Start the live feed for " + label + ", " + minutes + " min? This runs a Fabric notebook.")) return;
+          message += ":" + region.value + ":" + minutes;
+        }
+        if (navigator.vibrate) navigator.vibrate(12);
+        try {
+          const res = await fetch("https://ntfy.sh/skyfield-" + code, { method: "POST", body: message });
+          if (res.ok) say("Sent: " + message.replace(/:/g, " "), "ok");
+          else if (res.status === 429) say("Too many taps. Wait a few seconds.", "bad");
+          else say("Relay error " + res.status, "bad");
+        } catch {
+          say("No connection. Check the phone's internet.", "bad");
+        }
+      }),
+    );
+  }
+</script>
+</body>
+</html>
