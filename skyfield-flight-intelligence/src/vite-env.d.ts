@@ -11,7 +11,7 @@ interface ImportMetaEnv {
   readonly VITE_FABRIC_PORTAL_URL?: string;
   /** Public address of remote.html for the phone remote (the app's own hosting needs Fabric sign-in). */
   readonly VITE_REMOTE_URL?: string;
-  /** Storage account whose queues carry the phone remote's taps, and its key (secret: keep in .env.local). */
+  /** Storage account whose queues carry the phone remote's taps, and its key (secret: keep in .env.production.local and .env.development.local; the Rayfin CLI rewrites .env.local). */
   readonly VITE_REMOTE_ACCOUNT?: string;
   readonly VITE_REMOTE_KEY?: string;
 }
