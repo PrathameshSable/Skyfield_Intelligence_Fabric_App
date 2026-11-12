@@ -45,6 +45,7 @@ function rowsToLatestFlights(columns: { name: string }[], rows: unknown[][]): Fl
       airline: str(g(row, "airline")),
       manufacturer: str(g(row, "manufacturer")),
       aircraftType: str(g(row, "aircrafttype")),
+      positionTime: toUtcMs(g(row, "lastcontact")),
     });
   }
   return flights;

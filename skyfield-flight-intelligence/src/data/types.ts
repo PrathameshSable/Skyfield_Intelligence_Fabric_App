@@ -25,6 +25,8 @@ export interface Flight {
   airline: string | null;
   manufacturer: string | null;
   aircraftType: string | null;
+  /** Live only: when the aircraft was last heard from (epoch ms), so its position can be brought up to now. */
+  positionTime?: number | null;
 }
 
 /** True when a flight has a resolved origin→destination route. */

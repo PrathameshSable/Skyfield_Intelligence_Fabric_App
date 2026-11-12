@@ -22,6 +22,8 @@ export interface FlightSource {
 const METRES_PER_DEGREE = 111_320;
 /** Without fresh data for this long, live planes stop moving instead of flying on blind. */
 const MAX_COAST_MS = 30_000;
+/** Data reaches the app a couple of minutes late; never guess further ahead than this. */
+const MAX_CATCH_UP_MS = 180_000;
 
 /**
  * Dead-reckon airborne live flights along their heading at their real speed, so a plane stays on its true track
@@ -43,6 +45,18 @@ export function deadReckon(flights: Flight[], dtSeconds: number): void {
 }
 
 /**
+ * Moves each plane from where it was last heard to where it should be now. The feed's rows arrive about two
+ * minutes old, so without this every aircraft is drawn tens of km behind its real position.
+ */
+export function catchUp(flights: Flight[], nowMs: number): void {
+  for (const f of flights) {
+    if (f.positionTime == null) continue;
+    const ageMs = Math.min(Math.max(nowMs - f.positionTime, 0), MAX_CATCH_UP_MS);
+    deadReckon([f], ageMs / 1000);
+  }
+}
+
+/**
  * Live source backed by the Fabric semantic model. Polls authoritative
  * positions on an interval and dead-reckons between polls so motion stays
  * smooth despite the ~8s refresh.
@@ -54,6 +68,8 @@ export class LiveFlightSource implements FlightSource {
   private timer: ReturnType<typeof setInterval> | null = null;
   private lastGoodPoll = 0;
   private lastTick = 0;
+  private polling = false;
+  private readonly onVisible = () => void this.poll();
 
   constructor(
     private readonly provider: FlightProvider,
@@ -63,19 +79,30 @@ export class LiveFlightSource implements FlightSource {
   start(): void {
     void this.poll();
     this.timer = setInterval(() => void this.poll(), this.intervalMs);
+    // refresh at once when the tab comes back, instead of showing old positions until the next tick
+    globalThis.document?.addEventListener("visibilitychange", this.onVisible);
   }
 
   stop(): void {
     if (this.timer) clearInterval(this.timer);
     this.timer = null;
+    globalThis.document?.removeEventListener("visibilitychange", this.onVisible);
   }
 
   private async poll(): Promise<void> {
+    // One query at a time, and none from a hidden tab: each one pulls thousands of rows through a small shared
+    // Fabric capacity, and on a slow capacity overlapping queries only make it slower.
+    if (this.polling || globalThis.document?.hidden) return;
+    this.polling = true;
     try {
-      this.flights = await this.provider.getFlights();
+      const flights = await this.provider.getFlights();
+      catchUp(flights, Date.now());
+      this.flights = flights;
       this.lastGoodPoll = performance.now();
     } catch {
       // keep the last good set; it coasts for MAX_COAST_MS, then holds still
+    } finally {
+      this.polling = false;
     }
   }
 
