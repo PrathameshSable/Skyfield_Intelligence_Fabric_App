@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { parseRemoteMessage, queueAddSas, screenSas } from "./remoteLink.js";
+import { parseRemoteMessage, pollGap, queueAddSas, screenSas } from "./remoteLink.js";
 
 describe("parseRemoteMessage", () => {
   it("splits an action from its arguments", () => {
@@ -29,5 +29,14 @@ describe("storage passes", () => {
     expect(await screenSas("acct", key, start, expiry)).toBe(
       "sv=2020-12-06&ss=q&srt=co&sp=dcp&st=2026-01-01T00:00:00Z&se=2026-01-01T06:00:00Z&spr=https&sig=FBlrAHVNySpTVVxxo2Hu%2BAxgpzPBqNVqeEY7kXWYDBQ%3D",
     );
+  });
+});
+
+describe("pollGap", () => {
+  it("polls fast right after a tap and relaxes as the phone goes quiet", () => {
+    expect(pollGap(0)).toBe(120);
+    expect(pollGap(14_999)).toBe(120);
+    expect(pollGap(15_000)).toBe(350);
+    expect(pollGap(5 * 60_000)).toBe(1500);
   });
 });

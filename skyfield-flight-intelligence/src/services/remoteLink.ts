@@ -15,8 +15,18 @@ export const REMOTE_ENABLED: boolean =
 
 const SAS_VERSION = "2020-12-06";
 const PHONE_PASS_HOURS = 6;
-// shortcut: the queue is polled, so a tap lands up to POLL_MS late; a push service would be instant.
-const POLL_MS = 700;
+// shortcut: the queue is polled, so a tap lands up to one poll gap late; a push service would be instant.
+// The gap is short while taps are arriving, so a run of taps feels live, and relaxes when the phone goes
+// quiet, so an open remote costs little.
+const POLL_BUSY_MS = 120; // a tap arrived in the last 15 s
+const POLL_READY_MS = 350; // a tap arrived in the last 5 min, or the session just opened
+const POLL_IDLE_MS = 1500;
+
+/** How long to wait before the next poll, given how long ago the last tap (or the session start) was. */
+export function pollGap(msSinceLastTap: number): number {
+  if (msSinceLastTap < 15_000) return POLL_BUSY_MS;
+  return msSinceLastTap < 5 * 60_000 ? POLL_READY_MS : POLL_IDLE_MS;
+}
 const CODE_CHARS = "abcdefghjkmnpqrstuvwxyz23456789";
 
 /** The code names the session's queue. It is long and random, and never reused across page loads. */
@@ -75,6 +85,7 @@ export function listenForRemote(
   let timer: ReturnType<typeof setTimeout> | undefined;
   let queueUrl = "";
   let pass = "";
+  let lastTap = Date.now() - 15_000; // start in the "ready" gap
 
   const poll = async () => {
     if (stopped) return;
@@ -88,13 +99,15 @@ export function listenForRemote(
         onOnline(true);
         for (const node of xml.getElementsByTagName("MessageText")) {
           const tap = parseRemoteMessage(node.textContent ?? "");
-          if (tap && !stopped) onAction(...tap);
+          if (!tap || stopped) continue;
+          lastTap = Date.now();
+          onAction(...tap);
         }
       } catch {
         onOnline(false);
       }
     }
-    if (!stopped) timer = setTimeout(() => void poll(), POLL_MS);
+    if (!stopped) timer = setTimeout(() => void poll(), pollGap(Date.now() - lastTap));
   };
 
   void (async () => {
